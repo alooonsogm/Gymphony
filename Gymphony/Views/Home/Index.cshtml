@@ -1,3 +1,252 @@
-﻿@model Usuario
+﻿@model List<DatosSesion>
 
-<h1>Bienvenido @Model.Nombre</h1>
+<style>
+    /* Cabecera de bienvenida */
+    .home-header {
+        margin-bottom: 3rem;
+        animation: fadeInDown 0.6s ease-out;
+    }
+
+    .welcome-title {
+        font-weight: 800;
+        font-size: 2.2rem;
+        color: #ffffff;
+        letter-spacing: 1px;
+    }
+
+    .welcome-subtitle {
+        color: var(--gymphony-light-blue);
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    /* Tarjeta de Sesión (Efecto Cristal) */
+    .sesion-card {
+        background: rgba(10, 25, 49, 0.65);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(61, 165, 217, 0.2);
+        border-radius: 16px;
+        transition: all 0.3s ease;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        animation: fadeInUp 0.6s ease-out;
+    }
+
+    .sesion-card:hover {
+        transform: translateY(-8px);
+        box-shadow: 0 15px 30px rgba(28, 89, 158, 0.4);
+        border-color: rgba(61, 165, 217, 0.6);
+    }
+
+    /* Parte superior de la tarjeta (Título y Hora) */
+    .sesion-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+    }
+
+    .sesion-title {
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 1.3rem;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .sesion-time-badge {
+        background: rgba(61, 165, 217, 0.15);
+        color: var(--gymphony-light-blue);
+        padding: 0.4rem 0.8rem;
+        border-radius: 8px;
+        font-weight: 700;
+        font-size: 0.9rem;
+        border: 1px solid rgba(61, 165, 217, 0.3);
+        text-align: center;
+        min-width: 80px;
+    }
+
+    /* Cuerpo de la tarjeta (Datos) */
+    .sesion-body {
+        padding: 1.5rem;
+        flex-grow: 1;
+    }
+
+    .sesion-desc {
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        margin-bottom: 1.5rem;
+        line-height: 1.5;
+        /* Corta el texto si es muy largo con puntos suspensivos */
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;  
+        overflow: hidden;
+    }
+
+    .sesion-info-row {
+        display: flex;
+        align-items: center;
+        margin-bottom: 0.8rem;
+        color: #e0e0e0;
+        font-size: 0.95rem;
+    }
+
+    .sesion-info-icon {
+        color: var(--gymphony-light-blue);
+        margin-right: 12px;
+        width: 20px;
+        display: flex;
+        justify-content: center;
+    }
+
+    /* Pie de la tarjeta (Botón) */
+    .sesion-footer {
+        padding: 1.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .btn-reservar {
+        background: linear-gradient(135deg, var(--gymphony-blue), var(--gymphony-light-blue));
+        border: none;
+        color: white;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 0.8rem;
+        border-radius: 10px;
+        width: 100%;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+    }
+
+    .btn-reservar:hover {
+        background: linear-gradient(135deg, var(--gymphony-light-blue), var(--gymphony-blue));
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(28, 89, 158, 0.5);
+        color: white;
+    }
+
+    /* Estado Vacío */
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        background: rgba(10, 25, 49, 0.4);
+        border-radius: 20px;
+        border: 1px dashed rgba(61, 165, 217, 0.3);
+    }
+
+    /* Animaciones */
+    @@keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    @@keyframes fadeInDown {
+        from { opacity: 0; transform: translateY(-20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+
+<div class="container mt-4">
+    
+    <div class="home-header">
+        <h1 class="welcome-title">Hola, @ViewData["NOMBREUSER"]</h1>
+        <p class="welcome-subtitle">Descubre y reserva tus próximas sesiones en Gymphony.</p>
+    </div>
+
+    <div class="row g-4">
+        
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var sesion in Model)
+            {
+                <div class="col-12 col-md-6 col-xl-4">
+                    <div class="sesion-card">
+
+                        <div class="sesion-header">
+                            <h3 class="sesion-title">@sesion.NombreClase</h3>
+                            <div class="sesion-time-badge">
+                                @sesion.HoraInicio.ToString("HH:mm") h <br />
+                                <span style="font-size:0.75rem; color:#fff;">@sesion.HoraFin.ToString("HH:mm") h</span>
+                            </div>
+                        </div>
+
+                        <div class="sesion-body">
+                            <p class="sesion-desc" title="@sesion.Descripcion">
+                                @sesion.Descripcion
+                            </p>
+
+                            <div class="sesion-info-row">
+                                <div class="sesion-info-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/>
+                                    </svg>
+                                </div>
+                                <span>@sesion.Fecha.ToString("dd/MM/yyyy")</span>
+                            </div>
+
+                            <div class="sesion-info-row">
+                                <div class="sesion-info-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z"/>
+                                    </svg>
+                                </div>
+                                <span>@sesion.NombreEntrenador @sesion.ApellidoEntrenador</span>
+                            </div>
+
+                            <div class="sesion-info-row">
+                                <div class="sesion-info-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                                    </svg>
+                                </div>
+                                <span>@sesion.NombreSala</span>
+                            </div>
+
+                            <div class="sesion-info-row mb-0">
+                                <div class="sesion-info-icon">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8Zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816ZM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z"/>
+                                    </svg>
+                                </div>
+                                <span>Aforo: @sesion.CapacidadMaxima plazas</span>
+                            </div>
+                        </div>
+
+                        <div class="sesion-footer">
+                            <a asp-controller="Home" asp-action="Index" class="btn-reservar">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                  <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z"/>
+                                </svg>
+                                Reservar Plaza
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <div class="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="var(--gymphony-light-blue)" class="mb-3" viewBox="0 0 16 16">
+                        <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+                        <path d="M4.285 12.433a.5.5 0 0 0 .683-.183A3.498 3.498 0 0 1 8 10.5c1.295 0 2.426.703 3.032 1.75a.5.5 0 0 0 .866-.5A4.498 4.498 0 0 0 8 9.5a4.5 4.5 0 0 0-3.898 2.25.5.5 0 0 0 .183.683zM7 6.5C7 7.328 6.552 8 6 8s-1-.672-1-1.5S5.448 5 6 5s1 .672 1 1.5zm4 0c0 .828-.448 1.5-1 1.5s-1-.672-1-1.5S9.448 5 10 5s1 .672 1 1.5z"/>
+                    </svg>
+                    <h3 style="color: white; font-weight: 700;">No hay sesiones disponibles</h3>
+                    <p style="color: var(--text-muted);">Actualmente no hay clases programadas. Vuelve a revisar más tarde.</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>

@@ -79,5 +79,17 @@ namespace Gymphony.Repositories
             var consulta = from datos in this.context.Usuarios where datos.IdUsuario == idUsuario select datos;
             return await consulta.FirstOrDefaultAsync();
         }
+
+        public async Task<Rol> FindRolPorIdRolAsync(int idRol)
+        {
+            var consulta = from datos in this.context.Rol where datos.IdRol == idRol select datos;
+            return await consulta.FirstOrDefaultAsync();
+        }
+
+        public async Task<List<DatosSesion>> GetSesionesAsync()
+        {
+            var consulta = from datos in this.context.DatosSesion select datos;
+            return await consulta.ToListAsync();
+        }
     }
 }

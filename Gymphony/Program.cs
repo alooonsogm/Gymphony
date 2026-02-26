@@ -1,4 +1,5 @@
 using Gymphony.Data;
+using Gymphony.Helpers;
 using Gymphony.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,9 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession();
 builder.Services.AddControllersWithViews();
+
+builder.Services.AddSingleton<HelperPath>();
+builder.Services.AddHttpContextAccessor();
 
 string connectionString = builder.Configuration.GetConnectionString("SqlGymphony");
 builder.Services.AddTransient<RepositoryGymphony>();

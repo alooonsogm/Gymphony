@@ -24,7 +24,6 @@
             }
             else
             {
-                //Comparamos byte a byte
                 for (int x = 0; x < a.Length; x++)
                 {
                     if (a[x].Equals(b[x]) == false)

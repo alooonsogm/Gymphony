@@ -26,6 +26,6 @@ namespace Gymphony.Models
         [Column("DNI")]
         public string Dni { get; set; }
         [Column("RutaFoto")]
-        public string? RutaFoto { get; set; }
+        public string RutaFoto { get; set; }
     }
 }

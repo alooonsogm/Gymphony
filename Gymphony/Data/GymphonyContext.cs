@@ -13,5 +13,7 @@ namespace Gymphony.Data
         public DbSet<Usuario> Usuarios { get; set; }
         public DbSet<SeguridadUsuarios> SeguridadUsuarios { get; set; }
         public DbSet<ValidacionUsuario> ValidacionUsuario { get; set; }
+        public DbSet<Rol> Rol { get; set; }
+        public DbSet<DatosSesion> DatosSesion { get; set; }
     }
 }

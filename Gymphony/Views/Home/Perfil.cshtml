@@ -184,16 +184,7 @@
         <div class="profile-sidebar">
             <div class="profile-avatar-container">
                 <div class="profile-avatar">
-                    @if (string.IsNullOrEmpty(Model?.RutaFoto))
-                    {
-                        <svg xmlns="http://www.w3.org/2000/svg" width="65" height="65" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
-                        </svg>
-                    }
-                    else
-                    {
-                        <img src="@Model.RutaFoto" alt="Avatar" />
-                    }
+                    <img src='@ViewData["PATHFOTO"]' alt="Avatar" />
                 </div>
             </div>
 
@@ -201,7 +192,7 @@
             <h4 class="profile-surname">@Model.Apellidos</h4>
 
             <div class="profile-role-badge">
-                Miembro Gymphony
+                @ViewData["ROL"] Gymphony
             </div>
         </div>
 
