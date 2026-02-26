@@ -1,0 +1,198 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Iniciar Sesión - Gymphony</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        :root {
+            --gymphony-dark: #0a1931;
+            --gymphony-blue: #1c599e;
+            --gymphony-light-blue: #3da5d9;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--gymphony-dark);
+            overflow: hidden; /* Evita barras de scroll al hacer zoom al fondo */
+        }
+
+        /* 1. La capa más baja: El logo con ZOOM */
+        .login-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('/images/LogoGymphony.png');
+            background-repeat: no-repeat;
+            background-position: center center;
+            /* Forzamos a que ocupe el 100% del ancho y alto exacto de la ventana */
+            background-size: 100vw 100vh;
+            filter: blur(5px);
+            z-index: 1;
+            opacity: 0.8; /* Le bajamos un pelín la opacidad para fusionarlo con el fondo oscuro */
+        }
+
+        /* 2. La capa intermedia: Un filtro para oscurecer el fondo blanco de la foto */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(10, 25, 49, 0.75); /* Azul oscuro corporativo al 75% */
+            z-index: 2;
+        }
+
+        /* 3. El contenedor central */
+        .login-container {
+            position: relative;
+            z-index: 3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        /* Tarjeta del formulario - ESTILO GLASSMORPHISM (Cristal Oscuro) */
+        .login-card {
+            background: rgba(10, 25, 49, 0.65); /* Fondo azul oscuro transparente */
+            backdrop-filter: blur(15px); /* Desenfoca lo que hay detrás del formulario */
+            -webkit-backdrop-filter: blur(15px);
+            border: 1px solid rgba(61, 165, 217, 0.25); /* Borde sutil azul clarito */
+            padding: 3rem 2.5rem;
+            border-radius: 20px; /* Bordes más modernos */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.6);
+            width: 100%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        /* Títulos rediseñados (Mucho más profesionales) */
+        .login-title {
+            color: #ffffff;
+            font-weight: 800;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 0.2rem;
+        }
+
+        .login-subtitle {
+            color: var(--gymphony-light-blue);
+            font-size: 0.90rem;
+            font-weight: 600;
+            letter-spacing: 1px;
+            margin-bottom: 2.5rem;
+        }
+
+        /* Estilos para los inputs (Adaptados al fondo oscuro) */
+        .form-label {
+            font-weight: 500;
+            color: #e0e0e0;
+            text-align: left;
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 0.4rem;
+        }
+
+        .form-control {
+            background-color: rgba(255, 255, 255, 0.08); /* Fondo del input casi transparente */
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: white;
+            border-radius: 10px;
+            padding: 0.8rem 1rem;
+            transition: all 0.3s ease;
+        }
+
+            .form-control::placeholder {
+                color: rgba(255, 255, 255, 0.4);
+            }
+
+            .form-control:focus {
+                background-color: rgba(255, 255, 255, 0.12);
+                border-color: var(--gymphony-light-blue);
+                color: white;
+                box-shadow: 0 0 0 0.25rem rgba(61, 165, 217, 0.25);
+            }
+
+        /* Botón personalizado */
+        .btn-gymphony {
+            background: linear-gradient(135deg, var(--gymphony-blue), var(--gymphony-light-blue));
+            border: none;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            padding: 0.8rem 1.5rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+
+            .btn-gymphony:hover {
+                background: linear-gradient(135deg, var(--gymphony-light-blue), var(--gymphony-blue));
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(28, 89, 158, 0.5);
+                color: white;
+            }
+
+        /* Mensaje de error rediseñado */
+        .error-message {
+            background-color: rgba(220, 53, 69, 0.15);
+            border-left: 4px solid #dc3545;
+            color: #ff6b6b;
+            padding: 0.8rem;
+            border-radius: 5px;
+            font-weight: 500;
+            margin-top: 1.5rem;
+            text-align: left;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-background"></div>
+    <div class="login-overlay"></div>
+
+    <div class="login-container">
+        <div class="login-card">
+
+            <h1 class="login-title">Gymphony</h1>
+            <p class="login-subtitle">ACCESO AL PORTAL</p>
+
+            <form method="post">
+                <div class="mb-3 text-start">
+                    <label for="email" class="form-label">Correo Electrónico</label>
+                    <input type="email" id="email" name="email" class="form-control" placeholder="ejemplo@gmail.com" required />
+                </div>
+                <div class="mb-4 text-start">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <input type="password" id="password" name="password" class="form-control" placeholder="••••••••" required />
+                </div>
+                <button type="submit" class="btn btn-gymphony btn-lg">Iniciar Sesión</button>
+            </form>
+
+            @if (ViewData["MENSAJE"] != null)
+            {
+                <div class="error-message">
+                    @ViewData["MENSAJE"]
+                </div>
+            }
+        </div>
+    </div>
+
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

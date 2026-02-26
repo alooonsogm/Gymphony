@@ -1,0 +1,263 @@
+﻿@model Usuario
+
+<style>
+    /* Contenedor principal para centrar la tarjeta */
+    .profile-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        padding: 3rem 1rem;
+        animation: fadeIn 0.6s ease-out;
+    }
+
+    /* Tarjeta de Cristal (Glassmorphism) */
+    .profile-card {
+        background: rgba(10, 25, 49, 0.65);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(61, 165, 217, 0.25);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        width: 100%;
+        max-width: 900px;
+        overflow: hidden;
+        display: flex;
+        flex-wrap: wrap; /* Para que sea responsive en móviles */
+    }
+
+    /* Columna Izquierda: Avatar y Nombre */
+    .profile-sidebar {
+        background: linear-gradient(180deg, rgba(28, 89, 158, 0.1) 0%, rgba(10, 25, 49, 0) 100%);
+        border-right: 1px solid rgba(61, 165, 217, 0.15);
+        padding: 3rem 2rem;
+        text-align: center;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        flex: 1 1 350px; /* Tamaño flexible */
+    }
+
+    .profile-avatar-container {
+        width: 160px;
+        height: 160px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, var(--gymphony-blue), var(--gymphony-light-blue));
+        padding: 4px; /* Grosor del borde brillante */
+        margin-bottom: 1.5rem;
+        box-shadow: 0 8px 25px rgba(28, 89, 158, 0.4);
+    }
+
+    .profile-avatar {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background-color: var(--gymphony-dark);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        overflow: hidden;
+    }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .profile-name {
+        font-weight: 800;
+        font-size: 1.8rem;
+        color: #ffffff;
+        margin-bottom: 0; /* Quitamos margen inferior */
+        letter-spacing: 1px;
+    }
+
+    /* Estilo para los apellidos (AHORA EN BLANCO) */
+    .profile-surname {
+        color: #ffffff; /* Blanco puro */
+        font-weight: 400;
+        font-size: 1.3rem; /* Un poco más grande */
+        margin-top: 0.5rem; /* Separación con el nombre */
+        letter-spacing: 0.5px;
+    }
+
+    .profile-role-badge {
+        background-color: rgba(61, 165, 217, 0.15);
+        color: var(--gymphony-light-blue);
+        border: 1px solid rgba(61, 165, 217, 0.4);
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        margin-top: 1.5rem;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    }
+
+    /* Columna Derecha: Datos de Contacto */
+    .profile-details {
+        padding: 3rem;
+        flex: 2 1 450px; /* Ocupa más espacio que la foto */
+    }
+
+    .details-title {
+        color: var(--gymphony-light-blue);
+        font-size: 1.2rem;
+        font-weight: 700;
+        margin-bottom: 2rem;
+        text-transform: uppercase;
+        letter-spacing: 1.5px;
+        border-bottom: 1px solid rgba(61, 165, 217, 0.2);
+        padding-bottom: 0.8rem;
+    }
+
+    .info-group {
+        margin-bottom: 1.8rem;
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .info-icon {
+        color: var(--gymphony-light-blue);
+        background: rgba(61, 165, 217, 0.1);
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin-right: 1.2rem;
+        flex-shrink: 0;
+        border: 1px solid rgba(61, 165, 217, 0.15);
+    }
+
+    .info-content label {
+        display: block;
+        color: var(--text-muted);
+        font-size: 0.85rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.3rem;
+    }
+
+    .info-content p {
+        color: #ffffff;
+        font-size: 1.1rem;
+        font-weight: 500;
+        margin: 0;
+    }
+
+    /* Animación de entrada (Corregido con @@) */
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    /* Ajuste para móviles (Corregido con @@) */
+    @@media (max-width: 768px) {
+        .profile-sidebar {
+            border-right: none;
+            border-bottom: 1px solid rgba(61, 165, 217, 0.15);
+            padding: 2rem;
+        }
+
+        .profile-details {
+            padding: 2rem;
+        }
+    }
+</style>
+
+<div class="profile-wrapper">
+    <div class="profile-card">
+
+        <div class="profile-sidebar">
+            <div class="profile-avatar-container">
+                <div class="profile-avatar">
+                    @if (string.IsNullOrEmpty(Model?.RutaFoto))
+                    {
+                        <svg xmlns="http://www.w3.org/2000/svg" width="65" height="65" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                        </svg>
+                    }
+                    else
+                    {
+                        <img src="@Model.RutaFoto" alt="Avatar" />
+                    }
+                </div>
+            </div>
+
+            <h2 class="profile-name">@Model.Nombre</h2>
+            <h4 class="profile-surname">@Model.Apellidos</h4>
+
+            <div class="profile-role-badge">
+                Miembro Gymphony
+            </div>
+        </div>
+
+        <div class="profile-details">
+            <h3 class="details-title">Información Personal</h3>
+
+            <div class="info-group">
+                <div class="info-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757Zm3.436-.586L16 11.801V4.697l-5.803 3.546Z" />
+                    </svg>
+                </div>
+                <div class="info-content">
+                    <label>Correo Electrónico</label>
+                    <p>@Model.Email</p>
+                </div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
+                    </svg>
+                </div>
+                <div class="info-content">
+                    <label>Teléfono</label>
+                    <p>@Model.Telefono</p>
+                </div>
+            </div>
+
+            <div class="info-group">
+                <div class="info-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+                    </svg>
+                </div>
+                <div class="info-content">
+                    <label>Documento de Identidad (DNI)</label>
+                    <p>@Model.Dni</p>
+                </div>
+            </div>
+
+            <div class="info-group mb-0">
+                <div class="info-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
+                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
+                    </svg>
+                </div>
+                <div class="info-content">
+                    <label>Fecha de Nacimiento</label>
+                    <p>@(Model.FechaNacimiento.ToString("dd/MM/yyyy") ?? "No especificada")</p>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

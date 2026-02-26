@@ -1,25 +1,47 @@
-using System.Diagnostics;
+using Gymphony.Extensions;
 using Gymphony.Models;
+using Gymphony.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
+using System.Threading.Tasks;
 
 namespace Gymphony.Controllers
 {
     public class HomeController : Controller
     {
-        public IActionResult Index()
+        private RepositoryGymphony repo;
+
+        public HomeController(RepositoryGymphony repo)
         {
-            return View();
+            this.repo = repo;
         }
 
-        public IActionResult Privacy()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
+            if(idUser == 0)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            else
+            {
+                Usuario user = await this.repo.FindUsuarioAsync(idUser);
+                return View(user);
+            }
         }
 
-        [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Error()
+        public async Task<IActionResult> Perfil()
         {
-            return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
+            if (idUser == 0)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            else
+            {
+                Usuario user = await this.repo.FindUsuarioAsync(idUser);
+                return View(user);
+            }
         }
     }
 }

@@ -1,7 +1,17 @@
+using Gymphony.Data;
+using Gymphony.Repositories;
+using Microsoft.EntityFrameworkCore;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
+builder.Services.AddDistributedMemoryCache();
+builder.Services.AddSession();
 builder.Services.AddControllersWithViews();
+
+string connectionString = builder.Configuration.GetConnectionString("SqlGymphony");
+builder.Services.AddTransient<RepositoryGymphony>();
+builder.Services.AddDbContext<GymphonyContext>(options => options.UseSqlServer(connectionString));
 
 var app = builder.Build();
 
@@ -14,15 +24,16 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 app.UseRouting();
 
 app.UseAuthorization();
 
 app.MapStaticAssets();
-
+app.UseSession();
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
+    pattern: "{controller=Login}/{action=Index}/{id?}")
     .WithStaticAssets();
 
 
