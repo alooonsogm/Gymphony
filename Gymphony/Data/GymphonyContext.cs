@@ -15,5 +15,7 @@ namespace Gymphony.Data
         public DbSet<ValidacionUsuario> ValidacionUsuario { get; set; }
         public DbSet<Rol> Rol { get; set; }
         public DbSet<DatosSesion> DatosSesion { get; set; }
+        public DbSet<ReservaSesiones> ReservaSesiones { get; set; }
+        public DbSet<HorarioEmpleados> HorarioEmpleados { get; set; }
     }
 }

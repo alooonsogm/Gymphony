@@ -1,16 +1,21 @@
 ﻿@model Usuario
+@{
+    int idRolUser = Context.Session.GetObject<int>("IDROLUSUARIO");
+
+    List<DatosSesion> misReservas = ViewData["MIS_RESERVAS"] as List<DatosSesion> ?? new List<DatosSesion>();
+    List<HorarioEmpleados> misHorarios = ViewData["MIS_HORARIOS"] as List<HorarioEmpleados> ?? new List<HorarioEmpleados>();
+
+    string[] nombresDias = { "", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
+}
 
 <style>
-    /* Contenedor principal para centrar la tarjeta */
+    /* Contenedor principal con animación */
     .profile-wrapper {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        padding: 3rem 1rem;
         animation: fadeIn 0.6s ease-out;
+        padding-bottom: 4rem;
     }
 
-    /* Tarjeta de Cristal (Glassmorphism) */
+    /* 1. TARJETA DE CRISTAL (Ocupa todo el contenedor) */
     .profile-card {
         background: rgba(10, 25, 49, 0.65);
         backdrop-filter: blur(15px);
@@ -19,13 +24,12 @@
         border-radius: 20px;
         box-shadow: 0 15px 35px rgba(0,0,0,0.5);
         width: 100%;
-        max-width: 900px;
         overflow: hidden;
         display: flex;
-        flex-wrap: wrap; /* Para que sea responsive en móviles */
+        flex-wrap: wrap;
     }
 
-    /* Columna Izquierda: Avatar y Nombre */
+    /* Columna Izquierda: Avatar */
     .profile-sidebar {
         background: linear-gradient(180deg, rgba(28, 89, 158, 0.1) 0%, rgba(10, 25, 49, 0) 100%);
         border-right: 1px solid rgba(61, 165, 217, 0.15);
@@ -35,7 +39,7 @@
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        flex: 1 1 350px; /* Tamaño flexible */
+        flex: 1 1 350px;
     }
 
     .profile-avatar-container {
@@ -43,7 +47,7 @@
         height: 160px;
         border-radius: 50%;
         background: linear-gradient(135deg, var(--gymphony-blue), var(--gymphony-light-blue));
-        padding: 4px; /* Grosor del borde brillante */
+        padding: 4px;
         margin-bottom: 1.5rem;
         box-shadow: 0 8px 25px rgba(28, 89, 158, 0.4);
     }
@@ -70,16 +74,15 @@
         font-weight: 800;
         font-size: 1.8rem;
         color: #ffffff;
-        margin-bottom: 0; /* Quitamos margen inferior */
+        margin-bottom: 0;
         letter-spacing: 1px;
     }
 
-    /* Estilo para los apellidos (AHORA EN BLANCO) */
     .profile-surname {
-        color: #ffffff; /* Blanco puro */
+        color: #ffffff;
         font-weight: 400;
-        font-size: 1.3rem; /* Un poco más grande */
-        margin-top: 0.5rem; /* Separación con el nombre */
+        font-size: 1.3rem;
+        margin-top: 0.5rem;
         letter-spacing: 0.5px;
     }
 
@@ -97,10 +100,10 @@
         box-shadow: 0 4px 10px rgba(0,0,0,0.2);
     }
 
-    /* Columna Derecha: Datos de Contacto */
+    /* Columna Derecha: Datos en Grid */
     .profile-details {
         padding: 3rem;
-        flex: 2 1 450px; /* Ocupa más espacio que la foto */
+        flex: 3 1 600px;
     }
 
     .details-title {
@@ -114,8 +117,13 @@
         padding-bottom: 0.8rem;
     }
 
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 2rem;
+    }
+
     .info-group {
-        margin-bottom: 1.8rem;
         display: flex;
         align-items: flex-start;
     }
@@ -151,7 +159,95 @@
         margin: 0;
     }
 
-    /* Animación de entrada (Corregido con @@) */
+    /* --- 2. AGENDA DE SESIONES (SOLO LECTURA, ANCHO COMPLETO) --- */
+    .agenda-section {
+        margin-top: 3.5rem;
+    }
+
+    .agenda-item {
+        background: rgba(10, 25, 49, 0.4);
+        border-left: 5px solid var(--gymphony-blue);
+        border-radius: 10px;
+        padding: 1.5rem 2rem;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        border-right: 1px solid rgba(255, 255, 255, 0.05);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+        .agenda-item:hover {
+            background: rgba(10, 25, 49, 0.7);
+            border-left-color: var(--gymphony-light-blue);
+            transform: translateX(5px);
+        }
+
+    /* Grupo de Fecha y Hora */
+    .agenda-timebox {
+        display: flex;
+        flex-direction: column;
+        min-width: 140px;
+        padding-right: 2rem;
+        border-right: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .agenda-date {
+        color: var(--gymphony-light-blue);
+        font-weight: 700;
+        font-size: 1.1rem;
+        margin-bottom: 0.2rem;
+    }
+
+    .agenda-hours {
+        color: #fff;
+        font-size: 0.95rem;
+        opacity: 0.8;
+    }
+
+    /* Información de la Clase */
+    .agenda-info {
+        flex-grow: 1;
+        padding-left: 2.5rem;
+    }
+
+    .agenda-class-name {
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.4rem;
+        text-transform: uppercase;
+        margin-bottom: 0.4rem;
+        letter-spacing: 0.5px;
+    }
+
+    .agenda-class-details {
+        display: flex;
+        gap: 2rem;
+        color: var(--text-muted);
+        font-size: 0.95rem;
+    }
+
+    .agenda-detail-item {
+        display: flex;
+        align-items: center;
+    }
+
+    .agenda-detail-icon {
+        margin-right: 8px;
+        color: var(--gymphony-light-blue);
+    }
+
+    /* Estado Vacío de Agenda */
+    .empty-agenda {
+        background: rgba(10, 25, 49, 0.3);
+        border: 1px dashed rgba(61, 165, 217, 0.3);
+        border-radius: 15px;
+        padding: 3rem;
+        text-align: center;
+    }
+
+    /* Animaciones y Responsive */
     @@keyframes fadeIn {
         from {
             opacity: 0;
@@ -164,7 +260,6 @@
         }
     }
 
-    /* Ajuste para móviles (Corregido con @@) */
     @@media (max-width: 768px) {
         .profile-sidebar {
             border-right: none;
@@ -175,12 +270,36 @@
         .profile-details {
             padding: 2rem;
         }
+
+        .agenda-item {
+            flex-direction: column;
+            align-items: flex-start;
+            padding: 1.5rem;
+        }
+
+        .agenda-timebox {
+            border-right: none;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-right: 0;
+            padding-bottom: 1rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
+
+        .agenda-info {
+            padding-left: 0;
+        }
+
+        .agenda-class-details {
+            flex-direction: column;
+            gap: 0.8rem;
+        }
     }
 </style>
 
-<div class="profile-wrapper">
-    <div class="profile-card">
+<div class="container mt-4 profile-wrapper">
 
+    <div class="profile-card">
         <div class="profile-sidebar">
             <div class="profile-avatar-container">
                 <div class="profile-avatar">
@@ -199,56 +318,140 @@
         <div class="profile-details">
             <h3 class="details-title">Información Personal</h3>
 
-            <div class="info-group">
-                <div class="info-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757Zm3.436-.586L16 11.801V4.697l-5.803 3.546Z" />
-                    </svg>
+            <div class="info-grid">
+                <div class="info-group">
+                    <div class="info-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555ZM0 4.697v7.104l5.803-3.558L0 4.697ZM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757Zm3.436-.586L16 11.801V4.697l-5.803 3.546Z" />
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <label>Correo Electrónico</label>
+                        <p>@Model.Email</p>
+                    </div>
                 </div>
-                <div class="info-content">
-                    <label>Correo Electrónico</label>
-                    <p>@Model.Email</p>
+
+                <div class="info-group">
+                    <div class="info-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                            <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <label>Teléfono</label>
+                        <p>@Model.Telefono</p>
+                    </div>
+                </div>
+
+                <div class="info-group">
+                    <div class="info-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+                            <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <label>Documento de Identidad (DNI)</label>
+                        <p>@Model.Dni</p>
+                    </div>
+                </div>
+
+                <div class="info-group mb-0">
+                    <div class="info-icon">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
+                            <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
+                            <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
+                        </svg>
+                    </div>
+                    <div class="info-content">
+                        <label>Fecha de Nacimiento</label>
+                        <p>@(Model.FechaNacimiento.ToString("dd/MM/yyyy") ?? "No especificada")</p>
+                    </div>
                 </div>
             </div>
-
-            <div class="info-group">
-                <div class="info-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                        <path fill-rule="evenodd" d="M1.885.511a1.745 1.745 0 0 1 2.61.163L6.29 2.98c.329.423.445.974.315 1.494l-.547 2.19a.678.678 0 0 0 .178.643l2.457 2.457a.678.678 0 0 0 .644.178l2.189-.547a1.745 1.745 0 0 1 1.494.315l2.306 1.794c.829.645.905 1.87.163 2.611l-1.034 1.034c-.74.74-1.846 1.065-2.877.702a18.634 18.634 0 0 1-7.01-4.42 18.634 18.634 0 0 1-4.42-7.009c-.362-1.03-.037-2.137.703-2.877L1.885.511z" />
-                    </svg>
-                </div>
-                <div class="info-content">
-                    <label>Teléfono</label>
-                    <p>@Model.Telefono</p>
-                </div>
-            </div>
-
-            <div class="info-group">
-                <div class="info-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
-                        <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
-                    </svg>
-                </div>
-                <div class="info-content">
-                    <label>Documento de Identidad (DNI)</label>
-                    <p>@Model.Dni</p>
-                </div>
-            </div>
-
-            <div class="info-group mb-0">
-                <div class="info-icon">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor" viewBox="0 0 16 16">
-                        <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
-                        <path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z" />
-                    </svg>
-                </div>
-                <div class="info-content">
-                    <label>Fecha de Nacimiento</label>
-                    <p>@(Model.FechaNacimiento.ToString("dd/MM/yyyy") ?? "No especificada")</p>
-                </div>
-            </div>
-
         </div>
+    </div>
+
+
+    <div class="agenda-section">
+
+        @if (idRolUser == 2)
+        {
+            <h3 class="details-title" style="margin-bottom: 1.5rem;">Mis Próximas Clases</h3>
+
+            @if (misReservas.Any())
+            {
+                <div class="row">
+                    <div class="col-12">
+                        @foreach (DatosSesion sesion in misReservas)
+                        {
+                            <div class="agenda-item">
+                                <div class="agenda-timebox">
+                                    <span class="agenda-date">@sesion.Fecha.ToString("dd MMM")</span>
+                                    <span class="agenda-hours">@sesion.HoraInicio.ToString("HH:mm") - @sesion.HoraFin.ToString("HH:mm")</span>
+                                </div>
+
+                                <div class="agenda-info">
+                                    <h4 class="agenda-class-name">@sesion.NombreClase</h4>
+                                    <div class="agenda-class-details">
+                                        <div class="agenda-detail-item">
+                                            <svg class="agenda-detail-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" /></svg>
+                                            <span>@sesion.NombreEntrenador @sesion.ApellidoEntrenador</span>
+                                        </div>
+                                        <div class="agenda-detail-item">
+                                            <svg class="agenda-detail-icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16"><path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" /></svg>
+                                            <span>@sesion.NombreSala</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="empty-agenda">
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin: 0;">Tu agenda está libre. No tienes ninguna clase programada.</p>
+                </div>
+            }
+        }
+        else if (idRolUser == 3)
+        {
+            <h3 class="details-title" style="margin-bottom: 1.5rem;">Mi Horario de Trabajo</h3>
+
+            @if (misHorarios.Any())
+            {
+                <div class="row">
+                    <div class="col-12">
+                        @foreach (HorarioEmpleados horario in misHorarios)
+                        {
+                            <div class="agenda-item">
+                                <div class="agenda-timebox">
+                                    <span class="agenda-date">@nombresDias[horario.DiaSemana]</span>
+                                </div>
+
+                                <div class="agenda-info">
+                                    <h4 class="agenda-class-name">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="var(--gymphony-light-blue)" class="me-2" viewBox="0 0 16 16" style="vertical-align: text-bottom;">
+                                            <path d="M8 3.5a.5.5 0 0 0-1 0V9a.5.5 0 0 0 .252.434l3.5 2a.5.5 0 0 0 .496-.868L8 8.71V3.5z" />
+                                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm7-8A7 7 0 1 1 1 8a7 7 0 0 1 14 0z" />
+                                        </svg>
+                                        @horario.HoraInicio.ToString("HH:mm") h &mdash; @horario.HoraFin.ToString("HH:mm") h
+                                    </h4>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="empty-agenda">
+                    <p style="color: var(--text-muted); font-size: 1.1rem; margin: 0;">Aún no tienes horarios asignados en el sistema.</p>
+                </div>
+            }
+        }
+
     </div>
 </div>

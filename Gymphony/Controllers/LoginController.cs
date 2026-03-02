@@ -35,6 +35,7 @@ namespace Gymphony.Controllers
                 Usuario usuario = await this.repo.FindUsuarioAsync(user.Id);
                 HttpContext.Session.SetObjetc("IDUSUARIO", usuario.IdUsuario);
                 HttpContext.Session.SetObjetc("NOMBREUSUARIO", usuario.Nombre);
+                HttpContext.Session.SetObjetc("IDROLUSUARIO", usuario.RoleId);
                 return RedirectToAction("Index", "Home");
             }
         }

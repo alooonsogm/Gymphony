@@ -9,6 +9,8 @@ namespace Gymphony.Models
         [Key]
         [Column("Id")]
         public int IdSesion { get; set; }
+        [Column("EntrenadorId")]
+        public int EntrenadorId { get; set; }
         [Column("NombreClase")]
         public string NombreClase { get; set; }
         [Column("Descripcion")]
@@ -21,6 +23,8 @@ namespace Gymphony.Models
         public string NombreSala { get; set; }
         [Column("CapacidadMaxima")]
         public int CapacidadMaxima { get; set; }
+        [Column("PlazasReservadas")]
+        public int PlazasReservadas { get; set; }
         [Column("Fecha")]
         public DateOnly Fecha { get; set; }
         [Column("HoraInicio")]

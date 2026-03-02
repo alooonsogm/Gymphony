@@ -14,18 +14,6 @@ namespace Gymphony.Repositories
             this.context = context;
         }
 
-        private async Task<int> GetMaxIdUsuariosAsync()
-        {
-            if (this.context.Usuarios.Count() == 0)
-            {
-                return 1;
-            }
-            else
-            {
-                return await this.context.Usuarios.MaxAsync(z => z.IdUsuario) + 1;
-            }
-        }
-
         public async Task GeneratePasswordHashAsync()
         {
             var consulta = from datos in this.context.Usuarios select datos;
@@ -86,9 +74,114 @@ namespace Gymphony.Repositories
             return await consulta.FirstOrDefaultAsync();
         }
 
-        public async Task<List<DatosSesion>> GetSesionesAsync()
+        public async Task<List<DatosSesion>> GetSesionesNuevasAsync()
         {
-            var consulta = from datos in this.context.DatosSesion select datos;
+            DateOnly hoy = DateOnly.FromDateTime(DateTime.Now);
+            TimeOnly ahora = TimeOnly.FromDateTime(DateTime.Now);
+
+            var consulta = from datos in this.context.DatosSesion
+                           where datos.Fecha > hoy || (datos.Fecha == hoy && datos.HoraInicio > ahora)
+                           orderby datos.Fecha ascending, datos.HoraInicio ascending
+                           select datos;
+
+            return await consulta.ToListAsync();
+        }
+
+        private async Task<int> GetMaxIdReservaSesionesAsync()
+        {
+            if (this.context.ReservaSesiones.Count() == 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return await this.context.ReservaSesiones.MaxAsync(z => z.IdReservaSesion) + 1;
+            }
+        }
+
+        public async Task<string> ReservarPlazaAsync(int idSesion, int idCliente)
+        {
+            var consulta = from datos in this.context.DatosSesion where datos.IdSesion == idSesion select datos;
+            DatosSesion sesion = await consulta.FirstOrDefaultAsync();
+            if (sesion == null)
+            {
+                return "Error: La sesión no existe.";
+            }
+
+            DateOnly hoy = DateOnly.FromDateTime(DateTime.Now);
+            TimeOnly ahora = TimeOnly.FromDateTime(DateTime.Now);
+            if (sesion.Fecha < hoy || (sesion.Fecha == hoy && sesion.HoraInicio <= ahora))
+            {
+                return "No puedes reservar una sesión que ya ha comenzado o ha finalizado.";
+            }
+
+            int reservasActuales = await this.context.ReservaSesiones.CountAsync(r => r.SesionId == idSesion);
+            if (reservasActuales >= sesion.CapacidadMaxima)
+            {
+                return "Lo sentimos, la sesión está completa y no quedan plazas.";
+            }
+
+            int idReservaSesiones = await GetMaxIdReservaSesionesAsync();
+            ReservaSesiones nuevaReserva = new ReservaSesiones
+            {
+                IdReservaSesion = idReservaSesiones,
+                SesionId = idSesion,
+                ClienteId = idCliente,
+                FechaHoraReserva = DateTime.Now
+            };
+            await this.context.ReservaSesiones.AddAsync(nuevaReserva);
+            await this.context.SaveChangesAsync();
+            return "OK";
+        }
+
+        public async Task<List<int>> GetSesionesReservadasClienteAsync(int idCliente)
+        {
+            var consulta = from datos in this.context.ReservaSesiones
+                           where datos.ClienteId == idCliente
+                           select datos.SesionId;
+
+            return await consulta.ToListAsync();
+        }
+
+        public async Task<string> AnularReservaAsync(int idSesion, int idCliente)
+        {
+            ReservaSesiones reserva = await this.context.ReservaSesiones.FirstOrDefaultAsync(r => r.SesionId == idSesion && r.ClienteId == idCliente);
+
+            if (reserva == null)
+            {
+                return "Error: No tienes una reserva para esta sesión.";
+            }
+
+            this.context.ReservaSesiones.Remove(reserva);
+            await this.context.SaveChangesAsync();
+
+            return "OK_ANULADA";
+        }
+
+        public async Task<List<DatosSesion>> GetMisSesionesCompletasAsync(int idCliente)
+        {
+            List<int> idsReservas = await this.GetSesionesReservadasClienteAsync(idCliente);
+
+            if (idsReservas.Count == 0)
+            {
+                return new List<DatosSesion>();
+            }
+
+            var consulta = from datos in this.context.DatosSesion
+                           where idsReservas.Contains(datos.IdSesion)
+                           orderby datos.Fecha ascending, datos.HoraInicio ascending
+                           select datos;
+
+            return await consulta.ToListAsync();
+        }
+
+        public async Task<List<HorarioEmpleados>> GetHorarioUsuarioPorIdAsync(int idUsuario)
+        {
+            var consulta = from datos in this.context.HorarioEmpleados
+                           where datos.UsuarioId == idUsuario
+                           orderby datos.DiaSemana ascending
+                           select datos;
+
             return await consulta.ToListAsync();
         }
     }
