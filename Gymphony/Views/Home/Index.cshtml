@@ -27,7 +27,7 @@
         margin: 0;
     }
 
-    /* --- ALERTAS DE CRISTAL --- */
+    /* --- ALERTAS DE CRISTAL (Para mensajes de TempData) --- */
     .gymphony-alert {
         backdrop-filter: blur(15px);
         -webkit-backdrop-filter: blur(15px);
@@ -80,7 +80,6 @@
         height: 100%;
         display: flex;
         flex-direction: column;
-        /* overflow: hidden;  <--- ELIMINADO PARA QUE NO CORTE EL BADGE DORADO */
         animation: fadeInUp 0.6s ease-out;
         position: relative;
     }
@@ -104,7 +103,7 @@
 
     .badge-mi-clase {
         position: absolute;
-        top: -14px; /* Ajustado para que encaje perfecto en el centro de la línea */
+        top: -14px;
         left: 1.5rem;
         background: linear-gradient(135deg, #ffc107, #ff9800);
         color: #000;
@@ -245,6 +244,75 @@
         border: 1px dashed rgba(61, 165, 217, 0.3);
     }
 
+    /* --- NUEVO: ESTILOS PERSONALIZADOS PARA SWEETALERT2 --- */
+
+    /* El contenedor principal del popup */
+    .swal-gymphony-popup {
+        background: rgba(10, 25, 49, 0.85) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(61, 165, 217, 0.3) !important;
+        border-radius: 20px !important;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.5) !important;
+        color: #ffffff !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    }
+
+    /* El título */
+    .swal-gymphony-title {
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        letter-spacing: 1px !important;
+        font-size: 1.8rem !important;
+    }
+
+    /* El texto descriptivo */
+    .swal-gymphony-text {
+        color: var(--text-muted) !important;
+        font-size: 1.1rem !important;
+    }
+
+    /* Botón de confirmación (Genérico/Reserva) */
+    .swal-btn-confirm {
+        background: linear-gradient(135deg, var(--gymphony-blue), var(--gymphony-light-blue)) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        padding: 0.8rem 1.5rem !important;
+        box-shadow: 0 8px 20px rgba(28, 89, 158, 0.4) !important;
+    }
+
+    /* Botón de confirmación para Anular (Rojo) */
+    .swal-btn-confirm-danger {
+        background: linear-gradient(135deg, #dc3545, #ff6b6b) !important;
+        border: none !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        padding: 0.8rem 1.5rem !important;
+        box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4) !important;
+    }
+
+    /* Botón de cancelar */
+    .swal-btn-cancel {
+        background: rgba(255, 255, 255, 0.05) !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+        color: var(--text-muted) !important;
+        border-radius: 10px !important;
+        font-weight: 600 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        padding: 0.8rem 1.5rem !important;
+    }
+
+        .swal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+        }
+
     /* Animaciones */
     @@keyframes fadeInUp {
         from {
@@ -275,7 +343,18 @@
 
     <div class="home-header">
         <h1 class="welcome-title">Hola, @nombreUser</h1>
-        <p class="welcome-subtitle">Descubre y reserva tus próximas sesiones en Gymphony.</p>
+        @if (idRolUser == 2)
+        {
+            <p class="welcome-subtitle">Descubre y reserva tus próximas sesiones en Gymphony.</p>
+        }
+        else if (idRolUser == 3)
+        {
+            <p class="welcome-subtitle">Gestiona tus clases y conecta con tus alumnos en Gymphony.</p>
+        }
+        else if (idRolUser == 1)
+        {
+            <p class="welcome-subtitle">Panel de control central: administra clases, entrenadores y socios activos en Gymphony.</p>
+        }
 
         @if (TempData["MENSAJERESERVA"] != null)
         {
@@ -291,7 +370,7 @@
                     </div>
                     <div>
                         <strong style="font-size: 1.1rem; display: block;">¡Reserva Confirmada!</strong>
-                        <span style="color: #e9ecef; font-size: 0.95rem;">Tu plaza ha sido asegurada con éxito. Te esperamos.</span>
+                        <span style="color: #e9ecef; font-size: 0.95rem;">Tu plaza en @TempData["NOMBRECLASE"] ha sido asegurada con éxito. Te esperamos.</span>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -307,7 +386,7 @@
                     </div>
                     <div>
                         <strong style="font-size: 1.1rem; display: block;">Reserva Anulada</strong>
-                        <span style="color: #e9ecef; font-size: 0.95rem;">Has cancelado tu plaza correctamente. ¡Esperamos verte pronto!</span>
+                        <span style="color: #e9ecef; font-size: 0.95rem;">Has cancelado tu plaza en @TempData["NOMBRECLASE"] correctamente. ¡Esperamos verte pronto!</span>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -322,7 +401,7 @@
                     </div>
                     <div>
                         <strong style="font-size: 1.1rem; display: block;">Aforo Completo</strong>
-                        <span style="color: #e9ecef; font-size: 0.95rem;">@mensaje</span>
+                        <span style="color: #e9ecef; font-size: 0.95rem;">Lo sentimos, la sesión de @TempData["NOMBRECLASE"] está completa y no quedan plazas.</span>
                     </div>
                     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
@@ -430,7 +509,7 @@
                             <div class="sesion-footer">
                                 @if (misReservas.Contains(sesion.IdSesion))
                                 {
-                                    <a asp-controller="Home" asp-action="AnularSesiones" asp-route-idSesion="@sesion.IdSesion" class="btn-anular">
+                                    <a href="javascript:void(0)" onclick="confirmarAnulacion('@Url.Action("AnularSesiones", "Home", new { idSesion = sesion.IdSesion })', '@sesion.NombreClase')" class="btn-anular">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="me-2" viewBox="0 0 16 16">
                                             <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
                                         </svg>
@@ -439,7 +518,7 @@
                                 }
                                 else
                                 {
-                                    <a asp-controller="Home" asp-action="ReservarSesiones" asp-route-idSesion="@sesion.IdSesion" class="btn-reservar">
+                                    <a href="javascript:void(0)" onclick="confirmarReserva('@Url.Action("ReservarSesiones", "Home", new { idSesion = sesion.IdSesion })', '@sesion.NombreClase')" class="btn-reservar">
                                         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="me-2" viewBox="0 0 16 16">
                                             <path d="M10.854 7.146a.5.5 0 0 1 0 .708l-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 1 1 .708-.708L7.5 9.793l2.646-2.647a.5.5 0 0 1 .708 0z" />
                                         </svg>
@@ -448,7 +527,6 @@
                                 }
                             </div>
                         }
-
                     </div>
                 </div>
             }
@@ -468,3 +546,58 @@
         }
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const customSwalClass = {
+            popup: 'swal-gymphony-popup',
+            title: 'swal-gymphony-title',
+            htmlContainer: 'swal-gymphony-text',
+            cancelButton: 'swal-btn-cancel'
+        };
+
+        function confirmarReserva(urlDestino, nombreClase) {
+            Swal.fire({
+                title: '¿Confirmar plaza?',
+                html: `Estás a punto de reservar una plaza para <b>${nombreClase}</b>.`,
+                icon: 'question',
+                iconColor: '#3da5d9',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, RESERVAR',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-confirm me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.7)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = urlDestino;
+                }
+            });
+        }
+
+        function confirmarAnulacion(urlDestino, nombreClase) {
+            Swal.fire({
+                title: '¿Anular reserva?',
+                html: `Vas a liberar tu plaza de <b>${nombreClase}</b>.<br><span style="font-size: 0.9em; opacity: 0.7;">Otro usuario podrá ocuparla.</span>`,
+                icon: 'warning',
+                iconColor: '#ff6b6b',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, ANULAR PLAZA',
+                cancelButtonText: 'MANTENER',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-confirm-danger me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.7)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    window.location.href = urlDestino;
+                }
+            });
+        }
+    </script>
+}

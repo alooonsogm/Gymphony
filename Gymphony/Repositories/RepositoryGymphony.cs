@@ -134,6 +134,12 @@ namespace Gymphony.Repositories
             return "OK";
         }
 
+        public async Task<DatosSesion> FindDatosSesionAsync(int idSesion)
+        {
+            var consulta = from datos in this.context.DatosSesion where datos.IdSesion == idSesion select datos;
+            return await consulta.FirstOrDefaultAsync();
+        }
+
         public async Task<List<int>> GetSesionesReservadasClienteAsync(int idCliente)
         {
             var consulta = from datos in this.context.ReservaSesiones

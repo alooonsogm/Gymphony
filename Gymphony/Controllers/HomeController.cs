@@ -54,6 +54,8 @@ namespace Gymphony.Controllers
                 else
                 {
                     TempData["MENSAJERESERVA"] = await this.repo.ReservarPlazaAsync(idSesion, idUser);
+                    DatosSesion sesion = await this.repo.FindDatosSesionAsync(idSesion);
+                    TempData["NOMBRECLASE"] = sesion.NombreClase;
                     return RedirectToAction("Index", "Home");
                 }
             }
@@ -71,12 +73,14 @@ namespace Gymphony.Controllers
             {
                 if (idRol != 2)
                 {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Los empleados no pueden anular reservas.";
+                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo los clientes no pueden anular reservas.";
                     return RedirectToAction("Index", "Home");
                 }
                 else
                 {
                     TempData["MENSAJERESERVA"] = await this.repo.AnularReservaAsync(idSesion, idUser);
+                    DatosSesion sesion = await this.repo.FindDatosSesionAsync(idSesion);
+                    TempData["NOMBRECLASE"] = sesion.NombreClase;
                     return RedirectToAction("Index", "Home");
                 }
             }
