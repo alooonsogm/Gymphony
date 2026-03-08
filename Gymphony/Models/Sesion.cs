@@ -3,8 +3,8 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace Gymphony.Models
 {
-    [Table("V_DatosSesiones")]
-    public class DatosSesion
+    [Table("Sesiones")]
+    public class Sesion
     {
         [Key]
         [Column("Id")]
@@ -15,20 +15,6 @@ namespace Gymphony.Models
         public int EntrenadorId { get; set; }
         [Column("SalaId")]
         public int SalaId { get; set; }
-        [Column("NombreClase")]
-        public string NombreClase { get; set; }
-        [Column("Descripcion")]
-        public string Descripcion { get; set; }
-        [Column("NombreEntrenador")]
-        public string NombreEntrenador { get; set; }
-        [Column("ApellidoEntrenador")]
-        public string ApellidoEntrenador { get; set; }
-        [Column("NombreSala")]
-        public string NombreSala { get; set; }
-        [Column("CapacidadMaxima")]
-        public int CapacidadMaxima { get; set; }
-        [Column("PlazasReservadas")]
-        public int PlazasReservadas { get; set; }
         [Column("Fecha")]
         public DateOnly Fecha { get; set; }
         [Column("HoraInicio")]

@@ -1,0 +1,1187 @@
+﻿@model AdminGestionClases
+@{
+    string seccionActiva = ViewData["SECCIONACTIVA"].ToString();
+}
+
+<style>
+    /* Cabecera del Panel (SIN ANIMACIÓN) */
+    .admin-header {
+        margin-bottom: 2rem;
+    }
+
+    .admin-title {
+        font-weight: 800;
+        font-size: 2.2rem;
+        color: #ffffff;
+        letter-spacing: 1px;
+    }
+
+    /* --- MENÚ DE NAVEGACIÓN (PESTAÑAS SERVIDOR) --- */
+    .admin-tabs-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(61, 165, 217, 0.2);
+        padding-bottom: 1rem;
+    }
+
+    .admin-tab-btn {
+        background: rgba(10, 25, 49, 0.4);
+        border: 1px solid rgba(61, 165, 217, 0.3);
+        color: var(--text-muted);
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+        .admin-tab-btn:hover {
+            background: rgba(61, 165, 217, 0.15);
+            color: #fff;
+        }
+
+        /* Estilo para la pestaña que está pulsada actualmente */
+        .admin-tab-btn.active {
+            background: linear-gradient(135deg, var(--gymphony-blue), var(--gymphony-light-blue));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(28, 89, 158, 0.4);
+        }
+
+    /* --- CONTENEDOR DE TABLA CRISTAL (SIN ANIMACIÓN) --- */
+    .glass-table-wrapper {
+        background: rgba(10, 25, 49, 0.65);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(61, 165, 217, 0.25);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        padding: 2rem;
+        overflow-x: auto;
+    }
+
+    .glass-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .glass-table-title {
+        color: var(--gymphony-light-blue);
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    /* Botón Crear Nuevo */
+    .btn-create-new {
+        background: rgba(32, 201, 151, 0.15);
+        border: 1px solid #20c997;
+        color: #20c997;
+        padding: 0.6rem 1.4rem;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        letter-spacing: 0.5px;
+    }
+
+        .btn-create-new:hover {
+            background: #20c997;
+            color: #000;
+            box-shadow: 0 5px 15px rgba(32, 201, 151, 0.3);
+        }
+
+    /* Diseño de la Tabla */
+    .gymphony-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #fff;
+    }
+
+        .gymphony-table th {
+            border-bottom: 2px solid var(--gymphony-light-blue);
+            padding: 1.2rem 1rem;
+            text-align: left;
+            color: var(--gymphony-light-blue);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        .gymphony-table td {
+            padding: 1.2rem 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+            font-size: 1rem;
+        }
+
+        .gymphony-table tr:hover td {
+            background-color: rgba(255, 255, 255, 0.02);
+        }
+
+    /* Botones de acción dentro de la tabla */
+    .action-btn {
+        padding: 0.5rem 1rem;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 0.85rem;
+        font-weight: 600;
+        margin-left: 0.5rem;
+        transition: all 0.2s;
+        display: inline-block;
+    }
+
+    .action-edit {
+        background: rgba(253, 126, 20, 0.15);
+        color: #fd7e14;
+        border: 1px solid rgba(253, 126, 20, 0.3);
+    }
+
+        .action-edit:hover {
+            background: #fd7e14;
+            color: #fff;
+        }
+
+    .action-delete {
+        background: rgba(220, 53, 69, 0.15);
+        color: #ff6b6b;
+        border: 1px solid rgba(220, 53, 69, 0.3);
+    }
+
+        .action-delete:hover {
+            background: #dc3545;
+            color: #fff;
+        }
+
+    /* =======================================================
+           NUEVO: ESTILOS PROFESIONALES EXCLUSIVOS PARA SWEETALERT
+           ======================================================= */
+
+    /* Contenedor principal de cristal oscuro */
+    .swal-gymphony-popup {
+        background: rgba(10, 25, 49, 0.95) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(61, 165, 217, 0.3) !important;
+        border-radius: 16px !important;
+        box-shadow: 0 25px 50px rgba(0,0,0,0.6) !important;
+        color: #ffffff !important;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif !important;
+    }
+
+    /* Título del SweetAlert */
+    .swal-gymphony-title {
+        color: #ffffff !important;
+        font-weight: 800 !important;
+        letter-spacing: 1px !important;
+        font-size: 1.6rem !important;
+        padding-top: 1rem !important;
+    }
+
+    /* Botón verde de guardar dentro de SweetAlert */
+    .swal-btn-save {
+        background: linear-gradient(135deg, #20c997, #17a589) !important;
+        border: none !important;
+        color: #000 !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        padding: 0.7rem 1.8rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        box-shadow: 0 5px 15px rgba(32, 201, 151, 0.4) !important;
+    }
+
+    /* Botón cancelar dentro de SweetAlert */
+    .swal-btn-cancel {
+        background: transparent !important;
+        border: 1px solid rgba(255, 255, 255, 0.2) !important;
+        color: var(--text-muted) !important;
+        border-radius: 8px !important;
+        font-weight: 600 !important;
+        letter-spacing: 1px !important;
+        text-transform: uppercase !important;
+        padding: 0.7rem 1.5rem !important;
+    }
+
+        .swal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1) !important;
+            color: #ffffff !important;
+        }
+
+    /* Inputs text/number dentro del SweetAlert */
+    .swal-gymphony-input {
+        background: rgba(0, 0, 0, 0.3) !important; /* Fondo muy oscuro para el input */
+        border: 1px solid rgba(61, 165, 217, 0.3) !important;
+        color: #ffffff !important;
+        border-radius: 8px !important;
+        padding: 12px 15px !important;
+        width: 100% !important;
+        margin-bottom: 15px !important;
+        box-sizing: border-box !important;
+        font-family: inherit !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .swal-gymphony-input:focus {
+        outline: none !important;
+        border-color: var(--gymphony-light-blue) !important;
+        box-shadow: 0 0 10px rgba(61, 165, 217, 0.4) !important;
+        background: rgba(0, 0, 0, 0.5) !important;
+    }
+
+    .swal-gymphony-input::placeholder {
+        color: rgba(255, 255, 255, 0.3) !important;
+    }
+
+    /* Quitar las flechitas de los inputs numéricos */
+    .swal-gymphony-input[type=number]::-webkit-inner-spin-button,
+    .swal-gymphony-input[type=number]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+        margin: 0;
+    }
+
+    .swal-btn-danger {
+        background: linear-gradient(135deg, #dc3545, #ff6b6b) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        padding: 0.7rem 1.8rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        box-shadow: 0 5px 15px rgba(220, 53, 69, 0.4) !important;
+    }
+
+    /* Botón naranja de actualizar dentro de SweetAlert */
+    .swal-btn-edit {
+        background: linear-gradient(135deg, #fd7e14, #e8590c) !important;
+        border: none !important;
+        color: #fff !important;
+        font-weight: 700 !important;
+        border-radius: 8px !important;
+        padding: 0.7rem 1.8rem !important;
+        text-transform: uppercase !important;
+        letter-spacing: 1px !important;
+        box-shadow: 0 5px 15px rgba(253, 126, 20, 0.4) !important;
+    }
+
+    /* Etiqueta para los inputs del modal */
+    .swal-modal-label {
+        color: var(--gymphony-light-blue);
+        font-size: 0.85rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 5px;
+        display: block;
+    }
+</style>
+
+<div class="container mt-4 pb-5">
+
+    <div class="admin-header">
+        <h1 class="admin-title">Gestión de Clases</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Panel de administración para el catálogo de clases, espacios físicos y programación de sesiones.</p>
+    </div>
+
+    <div class="admin-tabs-container">
+        <a asp-controller="AdminClases" asp-action="PanelControl" asp-route-seccion="clases" class="admin-tab-btn @(seccionActiva == "clases" ? "active" : "")">
+            Clases
+        </a>
+        <a asp-controller="AdminClases" asp-action="PanelControl" asp-route-seccion="salas" class="admin-tab-btn @(seccionActiva == "salas" ? "active" : "")">
+            Salas
+        </a>
+        <a asp-controller="AdminClases" asp-action="PanelControl" asp-route-seccion="sesiones" class="admin-tab-btn @(seccionActiva == "sesiones" ? "active" : "")">
+            Sesiones
+        </a>
+    </div>
+
+    <div class="glass-table-wrapper">
+
+        @if (seccionActiva == "clases")
+        {
+            <div class="glass-table-header">
+                <h2 class="glass-table-title">Catálogo de Clases</h2>
+                <a href="javascript:void(0)" onclick="abrirModalCrearClase()" class="btn-create-new">
+                    + Nueva Clase
+                </a>
+            </div>
+
+            <table class="gymphony-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th style="width: 250px;">Nombre de la Clase</th>
+                        <th>Descripción</th>
+                        <th style="text-align: right; width: 200px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Clases clase in Model.Clases)
+                    {
+                        <tr>
+                            <td style="color: var(--gymphony-light-blue); font-weight: bold;">#@clase.IdClases</td>
+                            <td style="font-weight: 600;">@clase.Nombre</td>
+                            <td style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
+                                @(clase.Descripcion.Length > 80 ? clase.Descripcion.Substring(0, 80) + "..." : clase.Descripcion)
+                            </td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <a href="javascript:void(0)" onclick="abrirModalEditarClase(@clase.IdClases, '@clase.Nombre', '@clase.Descripcion')" class="action-btn action-edit">Editar</a>
+                                <a href="javascript:void(0)" onclick="borrarClase(@clase.IdClases, '@clase.Nombre')" class="action-btn action-delete">Borrar</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        else if (seccionActiva == "salas")
+        {
+            <div class="glass-table-header">
+                <h2 class="glass-table-title">Catálogo de Salas</h2>
+                <a href="javascript:void(0)" onclick="abrirModalCrearSala()" class="btn-create-new">+ Nueva Sala</a>
+            </div>
+
+            <table class="gymphony-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th>Nombre de la Sala</th>
+                        <th>Capacidad Máxima</th>
+                        <th style="text-align: right; width: 200px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (Salas sala in Model.Salas)
+                    {
+                        <tr>
+                            <td style="color: var(--gymphony-light-blue); font-weight: bold;">#@sala.IdSalas</td>
+                            <td style="font-weight: 600;">@sala.Nombre</td>
+                            <td>
+                                <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; font-size: 0.9rem; color: #fff;">
+                                    @sala.CapacidadMaxima personas
+                                </span>
+                            </td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <a href="javascript:void(0)" onclick="abrirModalEditarSala(@sala.IdSalas, '@sala.Nombre', @sala.CapacidadMaxima)" class="action-btn action-edit">Editar</a>
+                                <a href="javascript:void(0)" onclick="borrarSala(@sala.IdSalas, '@sala.Nombre')" class="action-btn action-delete">Borrar</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+        else if (seccionActiva == "sesiones")
+        {
+            <div class="glass-table-header">
+                <h2 class="glass-table-title">Programa de Sesiones</h2>
+                <a href="javascript:void(0)" onclick="abrirModalCrearSesion()" class="btn-create-new">+ Programar Sesión</a>
+            </div>
+
+            <table class="gymphony-table">
+                <thead>
+                    <tr>
+                        <th style="width: 80px;">ID</th>
+                        <th>Fecha y Hora</th>
+                        <th>Clase</th>
+                        <th>Entrenador</th>
+                        <th>Sala</th>
+                        <th style="text-align: right; width: 200px;">Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (DatosSesion sesion in Model.Sesiones)
+                    {
+                        <tr>
+                            <td style="color: var(--gymphony-light-blue); font-weight: bold;">#@sesion.IdSesion</td>
+                            <td>
+                                <div style="font-weight: 700; color: var(--gymphony-light-blue); margin-bottom: 4px;">@sesion.Fecha.ToString("dd MMM yyyy")</div>
+                                <div style="font-size: 0.9rem; color: var(--text-muted); background: rgba(0,0,0,0.2); display: inline-block; padding: 2px 8px; border-radius: 4px;">
+                                    @sesion.HoraInicio.ToString("HH:mm") - @sesion.HoraFin.ToString("HH:mm")
+                                </div>
+                            </td>
+                            <td style="font-weight: 600; font-size: 1.05rem;">@sesion.NombreClase</td>
+                            <td>
+                                <div style="display: flex; align-items: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="var(--text-muted)" class="me-2" viewBox="0 0 16 16">
+                                        <path d="M3 14s-1 0-1-1 1-4 6-4 6 3 6 4-1 1-1 1H3Zm5-6a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" />
+                                    </svg>
+                                    @sesion.NombreEntrenador @sesion.ApellidoEntrenador
+                                </div>
+                            </td>
+                            <td style="color: var(--text-muted);">
+                                <div style="display: flex; align-items: center;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="var(--gymphony-light-blue)" class="me-2" viewBox="0 0 16 16">
+                                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
+                                    </svg>
+                                    @sesion.NombreSala
+                                </div>
+                            </td>
+                            <td style="text-align: right; white-space: nowrap;">
+                                <a href="javascript:void(0)" onclick="abrirModalEditarSesion(@sesion.IdSesion, '@sesion.Fecha.ToString("yyyy-MM-dd")', '@sesion.HoraInicio.ToString("HH:mm")', '@sesion.HoraFin.ToString("HH:mm")', @sesion.ClaseId, @sesion.EntrenadorId, @sesion.SalaId)" class="action-btn action-edit">Editar</a>
+                                <a href="javascript:void(0)" onclick="borrarSesion(@sesion.IdSesion, '@sesion.NombreClase', '@sesion.Fecha.ToString("dd/MM/yyyy")')" class="action-btn action-delete">Borrar</a>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        const customSwalClass = {
+            popup: 'swal-gymphony-popup',
+            title: 'swal-gymphony-title',
+            htmlContainer: 'swal-gymphony-text',
+            cancelButton: 'swal-btn-cancel'
+        };
+
+        function abrirModalCrearSala() {
+            Swal.fire({
+                title: 'NUEVA SALA',
+                width: '500px',
+                html: `
+                    <div style="text-align: left; margin-top: 20px;">
+                        <label style="color: var(--gymphony-light-blue); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block;">Nombre de la Sala</label>
+                        <input id="swal-input-nombre" class="swal-gymphony-input" placeholder="Ej: Sala Zen" type="text" autocomplete="off">
+
+                        <label style="color: var(--gymphony-light-blue); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px;">Capacidad Máxima (Personas)</label>
+                        <input id="swal-input-capacidad" type="number" class="swal-gymphony-input" placeholder="Ej: 20" min="1">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'GUARDAR SALA',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-save me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)',
+
+                preConfirm: () => {
+                    const nombre = document.getElementById('swal-input-nombre').value;
+                    const capacidad = document.getElementById('swal-input-capacidad').value;
+
+                    if (!nombre || !capacidad) {
+                        Swal.showValidationMessage('Por favor, rellena todos los campos');
+                        return false;
+                    }
+
+                    if (parseInt(capacidad) <= 0) {
+                        Swal.showValidationMessage('La capacidad debe ser mayor que 0');
+                        return false;
+                    }
+
+                    return fetch('@Url.Action("CrearSala", "AdminClases")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            Nombre: nombre,
+                            CapacidadMaxima: parseInt(capacidad)
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message);
+                        }
+                        return data;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Error: ${error.message}`);
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: '¡Sala Creada!',
+                        text: 'La nueva sala se ha guardado correctamente.',
+                        icon: 'success',
+                        iconColor: '#20c997',
+                        customClass: {
+                            popup: 'swal-gymphony-popup',
+                            title: 'swal-gymphony-title',
+                            confirmButton: 'swal-btn-save'
+                        },
+                        buttonsStyling: false,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        }
+
+        function borrarSala(idSala, nombreSala) {
+            Swal.fire({
+                title: '¿Eliminar Sala?',
+                html: `Estás a punto de borrar la <b>${nombreSala}</b>.<br><span style="font-size: 0.9em; opacity: 0.7;">Esta acción no se puede deshacer.</span>`,
+                icon: 'warning',
+                iconColor: '#ff6b6b',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, BORRAR',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-danger me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: 'Borrando...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() },
+                        customClass: customSwalClass,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    });
+
+                    fetch(`/AdminClases/EliminarSala?id=${idSala}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Borrada!',
+                                text: `La ${nombreSala} ha sido eliminada del catálogo.`,
+                                icon: 'success',
+                                iconColor: '#20c997',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Acción denegada',
+                                text: data.message,
+                                icon: 'error',
+                                iconColor: '#ff6b6b',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+                    });
+                }
+            });
+        }
+
+        function abrirModalEditarSala(idSala, nombreActual, capacidadActual) {
+            Swal.fire({
+                title: 'EDITAR SALA',
+                width: '500px',
+                html: `
+                    <div style="text-align: left; margin-top: 20px;">
+                        <label style="color: var(--gymphony-light-blue); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block;">Nombre de la Sala</label>
+                        <input id="swal-edit-nombre" class="swal-gymphony-input" type="text" autocomplete="off" value="${nombreActual}">
+
+                        <label style="color: var(--gymphony-light-blue); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px;">Capacidad Máxima (Personas)</label>
+                        <input id="swal-edit-capacidad" type="number" class="swal-gymphony-input" min="1" value="${capacidadActual}">
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'ACTUALIZAR SALA',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-edit me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)',
+
+                preConfirm: () => {
+                    const nombre = document.getElementById('swal-edit-nombre').value;
+                    const capacidad = document.getElementById('swal-edit-capacidad').value;
+
+                    if (!nombre || !capacidad) {
+                        Swal.showValidationMessage('Por favor, rellena todos los campos');
+                        return false;
+                    }
+
+                    if (parseInt(capacidad) <= 0) {
+                        Swal.showValidationMessage('La capacidad debe ser mayor que 0');
+                        return false;
+                    }
+
+                    return fetch('@Url.Action("EditarSala", "AdminClases")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            IdSalas: idSala,
+                            Nombre: nombre,
+                            CapacidadMaxima: parseInt(capacidad)
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message);
+                        }
+                        return data;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Error: ${error.message}`);
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: '¡Actualizada!',
+                        text: 'Los datos de la sala se han modificado correctamente.',
+                        icon: 'success',
+                        iconColor: '#fd7e14',
+                        customClass: {
+                            popup: 'swal-gymphony-popup',
+                            title: 'swal-gymphony-title',
+                            confirmButton: 'swal-btn-edit'
+                        },
+                        buttonsStyling: false,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        }
+
+        function abrirModalCrearClase() {
+            Swal.fire({
+                title: 'NUEVA CLASE',
+                width: '600px',
+                html: `
+                    <div style="text-align: left; margin-top: 20px;">
+                        <label style="color: var(--gymphony-light-blue); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block;">Nombre de la Clase</label>
+                        <input id="swal-input-nombre-clase" class="swal-gymphony-input" placeholder="Ej: Pilates" type="text" autocomplete="off">
+
+                        <label style="color: var(--gymphony-light-blue); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px;">Descripción de la Actividad</label>
+                        <textarea id="swal-input-desc-clase" class="swal-gymphony-input" placeholder="Escribe aquí los detalles y beneficios de la clase..." rows="4" style="resize: none;"></textarea>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'GUARDAR CLASE',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-save me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)',
+
+                preConfirm: () => {
+                    const nombre = document.getElementById('swal-input-nombre-clase').value;
+                    const descripcion = document.getElementById('swal-input-desc-clase').value;
+
+                    if (!nombre || !descripcion) {
+                        Swal.showValidationMessage('Por favor, rellena tanto el nombre como la descripción.');
+                        return false;
+                    }
+
+                    return fetch('@Url.Action("CrearClase", "AdminClases")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            Nombre: nombre,
+                            Descripcion: descripcion
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message);
+                        }
+                        return data;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Error: ${error.message}`);
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: '¡Clase Añadida!',
+                        text: 'La nueva actividad se ha guardado en el catálogo.',
+                        icon: 'success',
+                        iconColor: '#20c997',
+                        customClass: {
+                            popup: 'swal-gymphony-popup',
+                            title: 'swal-gymphony-title',
+                            confirmButton: 'swal-btn-save'
+                        },
+                        buttonsStyling: false,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        }
+
+        function borrarClase(idClase, nombreClase) {
+            Swal.fire({
+                title: '¿Eliminar Clase?',
+                html: `Estás a punto de borrar la clase <b>${nombreClase}</b>.<br><span style="font-size: 0.9em; opacity: 0.7;">Esta acción no se puede deshacer.</span>`,
+                icon: 'warning',
+                iconColor: '#ff6b6b',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, BORRAR',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-danger me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    Swal.fire({
+                        title: 'Borrando...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() },
+                        customClass: customSwalClass,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    });
+
+                    fetch(`/AdminClases/EliminarClase?id=${idClase}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Borrada!',
+                                text: `La ${nombreClase} ha sido eliminada del catálogo.`,
+                                icon: 'success',
+                                iconColor: '#20c997',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Acción denegada',
+                                text: data.message,
+                                icon: 'error',
+                                iconColor: '#ff6b6b',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'No se pudo conectar con el servidor.', 'error');
+                    });
+                }
+            });
+        }
+
+        function abrirModalEditarClase(idClase, nombreActual, descActual) {
+            Swal.fire({
+                title: 'EDITAR CLASE',
+                width: '600px',
+                html: `
+                    <div style="text-align: left; margin-top: 20px;">
+                        <label style="color: var(--gymphony-light-blue); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block;">Nombre de la Clase</label>
+                        <input id="swal-edit-nombre-clase" class="swal-gymphony-input" type="text" value="${nombreActual}">
+
+                        <label style="color: var(--gymphony-light-blue); font-size: 0.85rem; font-weight: bold; text-transform: uppercase; margin-bottom: 8px; display: block; margin-top: 15px;">Descripción</label>
+                        <textarea id="swal-edit-desc-clase" class="swal-gymphony-input" rows="4" style="resize: none;">${descActual}</textarea>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'ACTUALIZAR CLASE',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-edit me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)',
+
+                preConfirm: () => {
+                    const nombre = document.getElementById('swal-edit-nombre-clase').value;
+                    const descripcion = document.getElementById('swal-edit-desc-clase').value;
+
+                    if (!nombre || !descripcion) {
+                        Swal.showValidationMessage('Por favor, rellena todos los campos');
+                        return false;
+                    }
+
+                    return fetch('@Url.Action("EditarClase", "AdminClases")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            IdClases: idClase,
+                            Nombre: nombre,
+                            Descripcion: descripcion
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message);
+                        }
+                        return data;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(`Error: ${error.message}`);
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: '¡Actualizada!',
+                        text: 'La clase se ha modificado correctamente.',
+                        icon: 'success',
+                        iconColor: '#fd7e14',
+                        customClass: {
+                            popup: 'swal-gymphony-popup',
+                            title: 'swal-gymphony-title',
+                            confirmButton: 'swal-btn-edit'
+                        },
+                        buttonsStyling: false,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        }
+
+        function abrirModalCrearSesion() {
+            Swal.fire({
+                title: 'PROGRAMAR SESIÓN',
+                width: '650px',
+                html: `
+                    <div style="text-align: left; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+
+                        <div style="grid-column: span 2;">
+                            <label class="swal-modal-label">Fecha de la Sesión</label>
+                            <input id="swal-input-fecha" type="date" class="swal-gymphony-input" style="margin-bottom: 0;">
+                        </div>
+
+                        <div>
+                            <label class="swal-modal-label">Hora Inicio</label>
+                            <input id="swal-input-inicio" type="time" class="swal-gymphony-input" style="margin-bottom: 0;">
+                        </div>
+                        <div>
+                            <label class="swal-modal-label">Hora Fin</label>
+                            <input id="swal-input-fin" type="time" class="swal-gymphony-input" style="margin-bottom: 0;">
+                        </div>
+
+                        <div style="grid-column: span 2; margin-top: 10px;">
+                            <label class="swal-modal-label">Clase</label>
+                            <select id="swal-input-clase" class="swal-gymphony-input" style="margin-bottom: 0; cursor: pointer;">
+                                <option value="">-- Selecciona una Actividad --</option>
+                                @foreach (Clases clase in Model.Clases)
+                                {
+                                    <option value="@clase.IdClases">@clase.Nombre</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div style="grid-column: span 2;">
+                            <label class="swal-modal-label">Entrenador</label>
+                            <select id="swal-input-entrenador" class="swal-gymphony-input" style="margin-bottom: 0; cursor: pointer;">
+                                <option value="">-- Selecciona el Entrenador --</option>
+                                @foreach (Usuario user in Model.Entrenadores)
+                                {
+                                    <option value="@user.IdUsuario">@user.Nombre @user.Apellidos</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div style="grid-column: span 2;">
+                            <label class="swal-modal-label">Sala</label>
+                            <select id="swal-input-sala" class="swal-gymphony-input" style="margin-bottom: 0; cursor: pointer;">
+                                <option value="">-- Selecciona una Sala --</option>
+                                @foreach (Salas sala in Model.Salas)
+                                {
+                                    <option value="@sala.IdSalas">@sala.Nombre (Aforo max: @sala.CapacidadMaxima)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'GUARDAR SESIÓN',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-save me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)',
+
+                preConfirm: () => {
+                    const fecha = document.getElementById('swal-input-fecha').value;
+                    const horaInicio = document.getElementById('swal-input-inicio').value;
+                    const horaFin = document.getElementById('swal-input-fin').value;
+                    const claseId = document.getElementById('swal-input-clase').value;
+                    const entrenadorId = document.getElementById('swal-input-entrenador').value;
+                    const salaId = document.getElementById('swal-input-sala').value;
+
+                    if (!fecha || !horaInicio || !horaFin || !claseId || !entrenadorId || !salaId) {
+                        Swal.showValidationMessage('Por favor, completa todos los campos del formulario.');
+                        return false;
+                    }
+
+                    const inicioFormateado = horaInicio.length === 5 ? horaInicio + ':00' : horaInicio;
+                    const finFormateado = horaFin.length === 5 ? horaFin + ':00' : horaFin;
+
+                    return fetch('@Url.Action("CrearSesion", "AdminClases")', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            ClaseId: parseInt(claseId),
+                            EntrenadorId: parseInt(entrenadorId),
+                            SalaId: parseInt(salaId),
+                            Fecha: fecha,
+                            HoraInicio: inicioFormateado,
+                            HoraFin: finFormateado
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) {
+                            throw new Error(data.message);
+                        }
+                        return data;
+                    })
+                    .catch(error => {
+                        Swal.showValidationMessage(error.message);
+                    });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: '¡Sesión Programada!',
+                        text: 'La sesión se ha validado y guardado correctamente en la agenda.',
+                        icon: 'success',
+                        iconColor: '#20c997',
+                        customClass: {
+                            popup: 'swal-gymphony-popup',
+                            title: 'swal-gymphony-title',
+                            confirmButton: 'swal-btn-save'
+                        },
+                        buttonsStyling: false,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
+            });
+        }
+
+        function abrirModalEditarSesion(idSesion, fechaActual, inicioActual, finActual, claseActual, entrenadorActual, salaActual) {
+            Swal.fire({
+                title: 'EDITAR SESIÓN',
+                width: '650px',
+                html: `
+                    <div style="text-align: left; margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
+
+                        <div style="grid-column: span 2;">
+                            <label class="swal-modal-label">Fecha de la Sesión</label>
+                            <input id="swal-edit-fecha" type="date" class="swal-gymphony-input" style="margin-bottom: 0;">
+                        </div>
+
+                        <div>
+                            <label class="swal-modal-label">Hora Inicio</label>
+                            <input id="swal-edit-inicio" type="time" class="swal-gymphony-input" style="margin-bottom: 0;">
+                        </div>
+                        <div>
+                            <label class="swal-modal-label">Hora Fin</label>
+                            <input id="swal-edit-fin" type="time" class="swal-gymphony-input" style="margin-bottom: 0;">
+                        </div>
+
+                        <div style="grid-column: span 2; margin-top: 10px;">
+                            <label class="swal-modal-label">Clase</label>
+                            <select id="swal-edit-clase" class="swal-gymphony-input" style="margin-bottom: 0; cursor: pointer;">
+                                <option value="">-- Selecciona una Actividad --</option>
+                                @foreach (Clases c in Model.Clases)
+                                {
+                                        <option value="@c.IdClases">@c.Nombre</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div style="grid-column: span 2;">
+                            <label class="swal-modal-label">Entrenador</label>
+                            <select id="swal-edit-entrenador" class="swal-gymphony-input" style="margin-bottom: 0; cursor: pointer;">
+                                <option value="">-- Selecciona el Entrenador --</option>
+                                @foreach (Usuario e in Model.Entrenadores)
+                                {
+                                        <option value="@e.IdUsuario">@e.Nombre @e.Apellidos</option>
+                                }
+                            </select>
+                        </div>
+
+                        <div style="grid-column: span 2;">
+                            <label class="swal-modal-label">Sala</label>
+                            <select id="swal-edit-sala" class="swal-gymphony-input" style="margin-bottom: 0; cursor: pointer;">
+                                <option value="">-- Selecciona una Sala --</option>
+                                @foreach (Salas s in Model.Salas)
+                                {
+                                        <option value="@s.IdSalas">@s.Nombre (Aforo max: @s.CapacidadMaxima)</option>
+                                }
+                            </select>
+                        </div>
+                    </div>
+                `,
+                showCancelButton: true,
+                confirmButtonText: 'ACTUALIZAR SESIÓN',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-edit me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)',
+
+                didOpen: () => {
+                    document.getElementById('swal-edit-fecha').value = fechaActual;
+                    document.getElementById('swal-edit-inicio').value = inicioActual;
+                    document.getElementById('swal-edit-fin').value = finActual;
+                    document.getElementById('swal-edit-clase').value = claseActual;
+                    document.getElementById('swal-edit-entrenador').value = entrenadorActual;
+                    document.getElementById('swal-edit-sala').value = salaActual;
+                },
+
+                preConfirm: () => {
+                    const fecha = document.getElementById('swal-edit-fecha').value;
+                    const horaInicio = document.getElementById('swal-edit-inicio').value;
+                    const horaFin = document.getElementById('swal-edit-fin').value;
+                    const claseId = document.getElementById('swal-edit-clase').value;
+                    const entrenadorId = document.getElementById('swal-edit-entrenador').value;
+                    const salaId = document.getElementById('swal-edit-sala').value;
+
+                    if (!fecha || !horaInicio || !horaFin || !claseId || !entrenadorId || !salaId) {
+                        Swal.showValidationMessage('Por favor, completa todos los campos.');
+                        return false;
+                    }
+
+                    const inicioFormateado = horaInicio.length === 5 ? horaInicio + ':00' : horaInicio;
+                    const finFormateado = horaFin.length === 5 ? horaFin + ':00' : horaFin;
+
+                    return fetch('@Url.Action("EditarSesion", "AdminClases")', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            IdSesion: idSesion,
+                            ClaseId: parseInt(claseId),
+                            EntrenadorId: parseInt(entrenadorId),
+                            SalaId: parseInt(salaId),
+                            Fecha: fecha,
+                            HoraInicio: inicioFormateado,
+                            HoraFin: finFormateado
+                        })
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.success) throw new Error(data.message);
+                        return data;
+                    })
+                    .catch(error => { Swal.showValidationMessage(error.message); });
+                }
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({
+                        title: '¡Actualizada!',
+                        text: 'La agenda de la sesión ha sido modificada con éxito.',
+                        icon: 'success',
+                        iconColor: '#fd7e14',
+                        customClass: {
+                            popup: 'swal-gymphony-popup',
+                            title: 'swal-gymphony-title',
+                            confirmButton: 'swal-btn-edit'
+                        },
+                        buttonsStyling: false,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    }).then(() => { window.location.reload(); });
+                }
+            });
+        }
+
+        function borrarSesion(idSesion, nombreClase, fecha) {
+            Swal.fire({
+                title: '¿Anular Sesión?',
+                html: `Estás a punto de eliminar la sesión de <b>${nombreClase}</b> del día <b>${fecha}</b>.<br><br><span style="font-size: 0.9em; opacity: 0.7;">Esta acción la borrará de la cartelera y no se puede deshacer.</span>`,
+                icon: 'warning',
+                iconColor: '#ff6b6b',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, BORRAR',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-danger me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    Swal.fire({
+                        title: 'Eliminando...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() },
+                        customClass: customSwalClass,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    });
+
+                    fetch(`/AdminClases/EliminarSesion?id=${idSesion}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Sesión Eliminada!',
+                                text: `La clase de ${nombreClase} ha sido borrada de la agenda.`,
+                                icon: 'success',
+                                iconColor: '#20c997',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'Hubo un problema de conexión.', 'error');
+                    });
+                }
+            });
+        }
+    </script>
+}

@@ -17,5 +17,8 @@ namespace Gymphony.Data
         public DbSet<DatosSesion> DatosSesion { get; set; }
         public DbSet<ReservaSesiones> ReservaSesiones { get; set; }
         public DbSet<HorarioEmpleados> HorarioEmpleados { get; set; }
+        public DbSet<Clases> Clases { get; set; }
+        public DbSet<Salas> Salas { get; set; }
+        public DbSet<Sesion> Sesion { get; set; }
     }
 }

@@ -86,6 +86,30 @@ namespace Gymphony.Controllers
             }
         }
 
+        public async Task<IActionResult> GetSociosSesion(int idSesion)
+        {
+            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
+            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
+            if (idUser == 0)
+            {
+                return RedirectToAction("Index", "Login");
+            }
+            else
+            {
+                if (idRol == 2)
+                {
+                    TempData["MENSAJERESERVA"] = "Acceso denegado: Los socios no pueden acceder a esta información.";
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+                    List<Usuario> socios = await this.repo.GetUsuariosPorSesionAsync(idSesion);
+                    var resultado = socios.Select(s => new {nombreCompleto = s.Nombre + " " + s.Apellidos, email = s.Email}).ToList();
+                    return Json(resultado);
+                }
+            }
+        }
+
         public async Task<IActionResult> Perfil()
         {
             int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");

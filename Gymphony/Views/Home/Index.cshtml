@@ -313,29 +313,27 @@
             color: #ffffff !important;
         }
 
-    /* Animaciones */
-    @@keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .btn-ver-socios {
+        background: rgba(61, 165, 217, 0.1);
+        border: 1px solid rgba(61, 165, 217, 0.4);
+        color: var(--gymphony-light-blue);
+        font-weight: 600;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        padding: 0.8rem;
+        border-radius: 10px;
+        width: 100%;
+        transition: all 0.3s ease;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
     }
 
-    @@keyframes fadeInDown {
-        from {
-            opacity: 0;
-            transform: translateY(-20px);
-        }
-
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
+    .btn-ver-socios:hover {
+        background: rgba(61, 165, 217, 0.25);
+        color: #ffffff;
+        box-shadow: 0 8px 20px rgba(61, 165, 217, 0.2);
     }
 </style>
 
@@ -527,6 +525,17 @@
                                 }
                             </div>
                         }
+                        else
+                        {
+                            <div class="sesion-footer">
+                                <a href="javascript:void(0)" onclick="verSocios(@sesion.IdSesion, '@sesion.NombreClase')" class="btn-ver-socios">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="me-2" viewBox="0 0 16 16">
+                                        <path d="M15 14s1 0 1-1-1-4-5-4-5 3-5 4 1 1 1 1h8Zm-7.978-1A.261.261 0 0 1 7 12.996c.001-.264.167-1.03.76-1.72C8.312 10.629 9.282 10 11 10c1.717 0 2.687.63 3.24 1.276.593.69.758 1.457.76 1.72l-.008.002a.274.274 0 0 1-.014.002H7.022ZM11 7a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0ZM6.936 9.28a5.88 5.88 0 0 0-1.23-.247A7.35 7.35 0 0 0 5 9c-4 0-5 3-5 4 0 .667.333 1 1 1h4.216A2.238 2.238 0 0 1 5 13c0-1.01.377-2.042 1.09-2.904.243-.294.526-.569.846-.816ZM4.92 10A5.493 5.493 0 0 0 4 13H1c0-.26.164-1.03.76-1.724.545-.636 1.492-1.256 3.16-1.275ZM1.5 5.5a3 3 0 1 1 6 0 3 3 0 0 1-6 0Zm3-2a2 2 0 1 0 0 4 2 2 0 0 0 0-4Z" />
+                                    </svg>
+                                    Ver Socios Apuntados
+                                </a>
+                            </div>
+                        }
                     </div>
                 </div>
             }
@@ -598,6 +607,76 @@
                     window.location.href = urlDestino;
                 }
             });
+        }
+
+        function verSocios(idSesion, nombreClase) {
+            Swal.fire({
+                title: 'Buscando asistentes...',
+                html: 'Conectando con la base de datos.',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() },
+                customClass: customSwalClass,
+                backdrop: 'rgba(10, 25, 49, 0.7)'
+            });
+
+            fetch(`/Home/GetSociosSesion?idSesion=${idSesion}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length === 0) {
+                        Swal.fire({
+                            title: 'Lista vacía',
+                            html: `Todavía no hay nadie apuntado a <b>${nombreClase}</b>.`,
+                            icon: 'info',
+                            iconColor: '#3da5d9',
+                            confirmButtonText: 'CERRAR',
+                            buttonsStyling: false,
+                            customClass: {
+                                ...customSwalClass,
+                                confirmButton: 'swal-btn-cancel'
+                            },
+                            backdrop: 'rgba(10, 25, 49, 0.7)'
+                        });
+                        return;
+                    }
+
+                    let htmlList = '<div style="max-height: 300px; overflow-y: auto; text-align: left; margin-top: 15px;">';
+
+                    data.forEach((socio, index) => {
+                        htmlList += `
+                            <div style="display: flex; align-items: center; padding: 12px 10px; border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <div style="width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, #1c599e, #3da5d9); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; margin-right: 15px; flex-shrink: 0;">
+                                    ${index + 1}
+                                </div>
+                                <div>
+                                    <div style="font-weight: 600; color: #fff; font-size: 1.05rem;">${socio.nombreCompleto}</div>
+                                    <div style="font-size: 0.85rem; color: #adb5bd;">${socio.email}</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    htmlList += '</div>';
+
+                    Swal.fire({
+                        title: `Asistentes: ${nombreClase}`,
+                        html: htmlList,
+                        confirmButtonText: 'CERRAR',
+                        buttonsStyling: false,
+                        customClass: {
+                            ...customSwalClass,
+                            confirmButton: 'swal-btn-cancel'
+                        },
+                        backdrop: 'rgba(10, 25, 49, 0.7)'
+                    });
+                })
+                .catch(error => {
+                    Swal.fire({
+                        title: 'Error',
+                        text: 'Hubo un problema al cargar los asistentes.',
+                        icon: 'error',
+                        customClass: customSwalClass,
+                        backdrop: 'rgba(10, 25, 49, 0.7)'
+                    });
+                });
         }
     </script>
 }
