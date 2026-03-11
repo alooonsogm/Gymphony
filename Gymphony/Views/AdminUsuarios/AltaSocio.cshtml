@@ -1,0 +1,178 @@
+﻿<style>
+    .admin-title {
+        font-weight: 800;
+        font-size: 2.2rem;
+        color: #ffffff;
+        letter-spacing: 1px;
+        margin-bottom: 0.5rem;
+    }
+
+    .glass-form-wrapper {
+        background: rgba(10, 25, 49, 0.65);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(61, 165, 217, 0.25);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        padding: 3rem;
+        margin-top: 2rem;
+    }
+
+    /* Grid de dos columnas para el formulario */
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+
+    .form-group-full {
+        grid-column: span 2;
+    }
+
+    .gymphony-label {
+        color: var(--gymphony-light-blue);
+        font-size: 0.9rem;
+        font-weight: bold;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .gymphony-input {
+        background: rgba(0, 0, 0, 0.3);
+        border: 1px solid rgba(61, 165, 217, 0.3);
+        color: #ffffff;
+        border-radius: 8px;
+        padding: 12px 15px;
+        width: 100%;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+        font-size: 1rem;
+    }
+
+        .gymphony-input:focus {
+            outline: none;
+            border-color: var(--gymphony-light-blue);
+            box-shadow: 0 0 10px rgba(61, 165, 217, 0.4);
+            background: rgba(0, 0, 0, 0.5);
+        }
+
+    /* El input file requiere un retoque especial para que no se vea feo */
+    input[type="file"].gymphony-input {
+        padding: 9px 15px;
+        cursor: pointer;
+    }
+
+    input[type="file"]::file-selector-button {
+        background: var(--gymphony-light-blue);
+        color: #000;
+        border: none;
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-weight: bold;
+        margin-right: 15px;
+        cursor: pointer;
+    }
+
+    .btn-save {
+        background: linear-gradient(135deg, #20c997, #17a589);
+        border: none;
+        color: #000;
+        font-weight: 700;
+        border-radius: 8px;
+        padding: 1rem 2.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        box-shadow: 0 5px 15px rgba(32, 201, 151, 0.4);
+        cursor: pointer;
+        transition: all 0.3s ease;
+        width: 100%;
+        font-size: 1.1rem;
+    }
+
+        .btn-save:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(32, 201, 151, 0.6);
+        }
+
+    .btn-cancel {
+        background: transparent;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        color: var(--text-muted);
+        border-radius: 8px;
+        font-weight: 600;
+        padding: 1rem 2.5rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        text-align: center;
+        display: block;
+        transition: all 0.3s ease;
+    }
+
+        .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.05);
+            color: #fff;
+        }
+</style>
+
+<div class="container mt-4 pb-5">
+
+    <div class="admin-header">
+        <h1 class="admin-title">Ficha de Nuevo Socio</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Rellena los datos para afiliar a un nuevo cliente en el sistema.</p>
+    </div>
+
+    <div class="glass-form-wrapper">
+        <form method="post" enctype="multipart/form-data">
+            <div class="form-grid">
+                <div>
+                    <label class="gymphony-label">Nombre</label>
+                    <input type="text" name="nombre" class="gymphony-input" placeholder="Ej: Juan" required>
+                </div>
+                <div>
+                    <label class="gymphony-label">Apellidos</label>
+                    <input type="text" name="apellidos" class="gymphony-input" placeholder="Ej: Pérez García" required>
+                </div>
+
+                <div>
+                    <label class="gymphony-label">DNI / NIE</label>
+                    <input type="text" name="dni" class="gymphony-input" placeholder="12345678A" required>
+                </div>
+                <div>
+                    <label class="gymphony-label">Fecha de Nacimiento</label>
+                    <input type="date" name="fechaNacimiento" class="gymphony-input" required>
+                </div>
+
+                <div>
+                    <label class="gymphony-label">Teléfono de Contacto</label>
+                    <input type="tel" name="telefono" class="gymphony-input" placeholder="600 00 00 00" required >
+                </div>
+                <div>
+                    <label class="gymphony-label">Foto de Perfil</label>
+                    <input type="file" name="foto" class="gymphony-input" required>
+                </div>
+
+                <div class="form-group-full" style="border-top: 1px solid rgba(255,255,255,0.1); margin-top: 10px; padding-top: 20px;">
+                    <h3 style="color: #fff; font-size: 1.2rem; margin-bottom: 20px;">Credenciales de Acceso</h3>
+                </div>
+
+                <div>
+                    <label class="gymphony-label">Correo Electrónico</label>
+                    <input type="email" name="email" class="gymphony-input" placeholder="usuario@gymphony.com" required>
+                </div>
+                <div>
+                    <label class="gymphony-label">Contraseña Inicial</label>
+                    <input type="password" name="password" class="gymphony-input" placeholder="Mínimo 5 caracteres" required>
+                </div>
+
+                <div style="margin-top: 20px;">
+                    <a asp-action="PanelUsuarios" asp-route-seccion="socios" class="btn-cancel">Cancelar</a>
+                </div>
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="btn-save">Afiliar Socio y Guardar</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

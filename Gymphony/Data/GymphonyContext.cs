@@ -20,5 +20,6 @@ namespace Gymphony.Data
         public DbSet<Clases> Clases { get; set; }
         public DbSet<Salas> Salas { get; set; }
         public DbSet<Sesion> Sesion { get; set; }
+        public DbSet<Afiliaciones> Afiliaciones { get; set; }
     }
 }

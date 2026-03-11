@@ -327,6 +327,16 @@ namespace Gymphony.Repositories
 
         public async Task<string> ValidarSesionAsync(DateOnly fecha, TimeOnly horaInicio, TimeOnly horaFin, int idEntrenador, int idSala, int? idSesionActual = null)
         {
+            if (fecha < DateOnly.FromDateTime(DateTime.Today))
+            {
+                return "La fecha debe ser posterior al día de hoy.";
+            }
+
+            if (fecha == DateOnly.FromDateTime(DateTime.Today) && horaInicio <= TimeOnly.FromDateTime(DateTime.Now))
+            {
+                return "Para las sesiones de hoy, la hora de inicio debe ser posterior a la hora actual.";
+            }
+
             if (horaInicio >= horaFin)
             {
                 return "La hora de fin debe ser posterior a la hora de inicio.";
@@ -450,6 +460,36 @@ namespace Gymphony.Repositories
             return await consulta.ToListAsync();
         }
 
+        public async Task<List<VistaSocio>> GetSociosConEstadoAsync()
+        {
+            var usuariosSocio = await this.context.Usuarios.Where(u => u.RoleId == 2).ToListAsync();
+            var listaSocios = new List<VistaSocio>();
+
+            foreach (var user in usuariosSocio)
+            {
+                var ultimaAfiliacion = await this.context.Afiliaciones.Where(a => a.ClienteId == user.IdUsuario).OrderByDescending(a => a.FechaAlta).FirstOrDefaultAsync();
+
+                bool activo = false;
+                if (ultimaAfiliacion != null && ultimaAfiliacion.FechaBaja == null)
+                {
+                    activo = true;
+                }
+
+                listaSocios.Add(new VistaSocio
+                {
+                    IdSocio = user.IdUsuario,
+                    Nombre = user.Nombre,
+                    Apellidos = user.Apellidos,
+                    Email = user.Email,
+                    Telefono = user.Telefono,
+                    FechaNacimiento = user.FechaNacimiento,
+                    DNI = user.Dni,
+                    esActivo = activo
+                });
+            }
+            return listaSocios;
+        }
+
         private async Task<int> GetMaxIdUsuarioAsync()
         {
             if (this.context.Usuarios.Count() == 0)
@@ -470,6 +510,18 @@ namespace Gymphony.Repositories
             else
             {
                 return await this.context.SeguridadUsuarios.MaxAsync(z => z.Id) + 1;
+            }
+        }
+
+        private async Task<int> GetMaxIdAfiliacionAsync()
+        {
+            if (this.context.Afiliaciones.Count() == 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return await this.context.Afiliaciones.MaxAsync(z => z.Id) + 1;
             }
         }
 
@@ -496,6 +548,14 @@ namespace Gymphony.Repositories
             userSeguridad.Salt = HelperTools.GenerateSalt();
             userSeguridad.PasswordHash = HelperCryptography.EncryptPassword(password, userSeguridad.Salt);
             await this.context.SeguridadUsuarios.AddAsync(userSeguridad);
+            await this.context.SaveChangesAsync();
+
+            Afiliaciones nuevaAfiliacion = new Afiliaciones();
+            nuevaAfiliacion.Id = await this.GetMaxIdAfiliacionAsync();
+            nuevaAfiliacion.ClienteId = idUser;
+            nuevaAfiliacion.FechaAlta = DateOnly.FromDateTime(DateTime.Now);
+            nuevaAfiliacion.FechaBaja = null;
+            await this.context.Afiliaciones.AddAsync(nuevaAfiliacion);
             await this.context.SaveChangesAsync();
         }
     }

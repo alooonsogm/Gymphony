@@ -268,7 +268,7 @@
         {
             <div class="glass-table-header">
                 <h2 class="glass-table-title">Socios Afiliados</h2>
-                <a href="#" class="btn-create-new">+ Alta Socio</a>
+                <a asp-controller="AdminUsuarios" asp-action="AltaSocio" class="btn-create-new">+ Crear Socio</a>
             </div>
 
             <table class="gymphony-table">
@@ -277,13 +277,13 @@
                         <th>Nombre Completo</th>
                         <th>Email</th>
                         <th>Teléfono</th>
-                        <th>Fecha Nacimiento</th>
+                        <th>Fecha de Nacimiento</th>
                         <th>DNI</th>
-                        <th style="text-align: right; width: 200px;">Acciones</th>
+                        <th style="text-align: right; width: 230px;">Acciones</th>
                     </tr>
                 </thead>
                 <tbody>
-                    @foreach (Usuario socio in Model.Socios)
+                    @foreach (VistaSocio socio in Model.Socios)
                     {
                         <tr>
                             <td style="font-weight: 600;">
@@ -297,10 +297,18 @@
                             <td style="color: var(--text-muted);">@socio.Email</td>
                             <td>@socio.Telefono</td>
                             <td>@socio.FechaNacimiento.ToString("dd/MM/yyyy")</td>
-                            <td><span style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">@socio.Dni</span></td>
+                            <td><span style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">@socio.DNI</span></td>
                             <td style="text-align: right; white-space: nowrap;">
-                                <a href="#" class="action-btn action-edit">Editar</a>
-                                <a href="#" class="action-btn action-delete">Borrar</a>
+                                @if (socio.esActivo)
+                                {
+                                    <a href="javascript:void(0)" onclick="darDeBajaSocio(@socio.IdSocio, '@socio.Nombre @socio.Apellidos')" class="action-btn" style="background: rgba(253, 126, 20, 0.15); color: #fd7e14; border: 1px solid rgba(253, 126, 20, 0.3);">⬇ Dar Baja</a>
+                                }
+                                else
+                                {
+                                    <a href="javascript:void(0)" onclick="reactivarSocio(@socio.IdSocio, '@socio.Nombre @socio.Apellidos')" class="action-btn" style="background: rgba(32, 201, 151, 0.15); color: #20c997; border: 1px solid rgba(32, 201, 151, 0.3);">⬆ Dar Alta</a>
+                                }
+
+                                <a href="javascript:void(0)" onclick="borrarSocioDefinitivo(@socio.IdSocio, '@socio.Nombre')" class="action-btn action-delete">Borrar</a>
                             </td>
                         </tr>
                     }
@@ -312,7 +320,7 @@
         {
             <div class="glass-table-header">
                 <h2 class="glass-table-title">Plantilla de Entrenadores</h2>
-                <a href="#" class="btn-create-new">+ Alta Entrenador</a>
+                <a href="#" class="btn-create-new">+ Crear Entrenador</a>
             </div>
 
             <table class="gymphony-table">
