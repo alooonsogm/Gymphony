@@ -467,7 +467,7 @@ namespace Gymphony.Repositories
 
             foreach (var user in usuariosSocio)
             {
-                var ultimaAfiliacion = await this.context.Afiliaciones.Where(a => a.ClienteId == user.IdUsuario).OrderByDescending(a => a.FechaAlta).FirstOrDefaultAsync();
+                var ultimaAfiliacion = await this.context.Afiliaciones.Where(a => a.ClienteId == user.IdUsuario).OrderByDescending(a => a.Id).FirstOrDefaultAsync();
 
                 bool activo = false;
                 if (ultimaAfiliacion != null && ultimaAfiliacion.FechaBaja == null)
@@ -557,6 +557,49 @@ namespace Gymphony.Repositories
             nuevaAfiliacion.FechaBaja = null;
             await this.context.Afiliaciones.AddAsync(nuevaAfiliacion);
             await this.context.SaveChangesAsync();
+        }
+
+        public async Task DeleteSocioAsync(int idSocio)
+        {
+            Usuario user = await FindUsuarioAsync(idSocio);
+            if (user != null)
+            {
+                this.context.Usuarios.Remove(user);
+                await this.context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DarDeBajaSocioAsync(int idSocio)
+        {
+            Afiliaciones afiliacionActiva = await this.context.Afiliaciones.Where(a => a.ClienteId == idSocio && a.FechaBaja == null).OrderByDescending(a => a.FechaAlta).FirstOrDefaultAsync();
+
+            if (afiliacionActiva != null)
+            {
+                afiliacionActiva.FechaBaja = DateOnly.FromDateTime(DateTime.Now);
+                await this.context.SaveChangesAsync();
+            }
+        }
+
+        public async Task DarDeAltaSocioAsync(int idSocio)
+        {
+            Afiliaciones nuevaAfiliacion = new Afiliaciones();
+            nuevaAfiliacion.Id = await this.GetMaxIdAfiliacionAsync();
+            nuevaAfiliacion.ClienteId = idSocio;
+            nuevaAfiliacion.FechaAlta = DateOnly.FromDateTime(DateTime.Now);
+            nuevaAfiliacion.FechaBaja = null;
+
+            await this.context.Afiliaciones.AddAsync(nuevaAfiliacion);
+            await this.context.SaveChangesAsync();
+        }
+
+        public async Task<bool> IsSocioActivoAsync(int idUsuario)
+        {
+            var ultimaAfiliacion = await this.context.Afiliaciones.Where(a => a.ClienteId == idUsuario).OrderByDescending(a => a.Id).FirstOrDefaultAsync();
+            if (ultimaAfiliacion == null || ultimaAfiliacion.FechaBaja != null)
+            {
+                return false;
+            }
+            return true;
         }
     }
 }

@@ -49,7 +49,7 @@ namespace Gymphony.Controllers
             }
         }
 
-        public IActionResult AltaSocio()
+        public IActionResult CrearSocio()
         {
             int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
             int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
@@ -73,7 +73,7 @@ namespace Gymphony.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> AltaSocio(string email, string password, string nombre, string apellidos, string telefono, DateOnly fechaNacimiento, string dni, IFormFile foto)
+        public async Task<IActionResult> CrearSocio(string email, string password, string nombre, string apellidos, string telefono, DateOnly fechaNacimiento, string dni, IFormFile foto)
         {
             int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
             int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
@@ -98,8 +98,51 @@ namespace Gymphony.Controllers
                         await foto.CopyToAsync(stream);
                     }
                     await this.repo.RegistroSocioAsync(email, password, nombre, apellidos, telefono, fechaNacimiento, dni, fileName);
+                    TempData["MENSAJE_EXITO"] = $"El socio {nombre} {apellidos} ha sido dado de alta correctamente.";
                     return RedirectToAction("PanelUsuarios", new { seccion = "socios" });
                 }
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> EliminarSocio(int id)
+        {
+            try
+            {
+                await this.repo.DeleteSocioAsync(id);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error al eliminar el usuario: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DarBajaSocio(int id)
+        {
+            try
+            {
+                await this.repo.DarDeBajaSocioAsync(id);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error al dar de baja: " + ex.Message });
+            }
+        }
+
+        [HttpPost]
+        public async Task<IActionResult> DarDeAltaSocio(int id)
+        {
+            try
+            {
+                await this.repo.DarDeAltaSocioAsync(id);
+                return Json(new { success = true });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error al reactivar socio: " + ex.Message });
             }
         }
     }

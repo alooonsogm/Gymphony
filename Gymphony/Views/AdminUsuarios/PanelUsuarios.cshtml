@@ -158,9 +158,21 @@
         border: 1px solid rgba(220, 53, 69, 0.3);
     }
 
-        .action-delete:hover {
-            background: #dc3545;
-            color: #fff;
+    .action-delete:hover {
+        background: #dc3545;
+        color: #fff;
+    }
+
+    /* Nueva clase para el botón verde de Dar Alta */
+    .action-success {
+        background: rgba(32, 201, 151, 0.15);
+        color: #20c997;
+        border: 1px solid rgba(32, 201, 151, 0.3);
+    }
+
+        .action-success:hover {
+            background: #20c997;
+            color: #000; /* O #fff si prefieres el texto blanco al iluminarse */
         }
 
     /* SweetAlert Custom Styles */
@@ -268,7 +280,7 @@
         {
             <div class="glass-table-header">
                 <h2 class="glass-table-title">Socios Afiliados</h2>
-                <a asp-controller="AdminUsuarios" asp-action="AltaSocio" class="btn-create-new">+ Crear Socio</a>
+                <a asp-controller="AdminUsuarios" asp-action="CrearSocio" class="btn-create-new">+ Crear Socio</a>
             </div>
 
             <table class="gymphony-table">
@@ -301,11 +313,11 @@
                             <td style="text-align: right; white-space: nowrap;">
                                 @if (socio.esActivo)
                                 {
-                                    <a href="javascript:void(0)" onclick="darDeBajaSocio(@socio.IdSocio, '@socio.Nombre @socio.Apellidos')" class="action-btn" style="background: rgba(253, 126, 20, 0.15); color: #fd7e14; border: 1px solid rgba(253, 126, 20, 0.3);">⬇ Dar Baja</a>
+                                    <a href="javascript:void(0)" onclick="darDeBajaSocio(@socio.IdSocio, '@socio.Nombre @socio.Apellidos')" class="action-btn action-edit">⬇ Dar Baja</a>
                                 }
                                 else
                                 {
-                                    <a href="javascript:void(0)" onclick="reactivarSocio(@socio.IdSocio, '@socio.Nombre @socio.Apellidos')" class="action-btn" style="background: rgba(32, 201, 151, 0.15); color: #20c997; border: 1px solid rgba(32, 201, 151, 0.3);">⬆ Dar Alta</a>
+                                    <a href="javascript:void(0)" onclick="DarDeAltaSocio(@socio.IdSocio, '@socio.Nombre @socio.Apellidos')" class="action-btn action-success">⬆ Dar Alta</a>
                                 }
 
                                 <a href="javascript:void(0)" onclick="borrarSocioDefinitivo(@socio.IdSocio, '@socio.Nombre')" class="action-btn action-delete">Borrar</a>
@@ -363,3 +375,184 @@
 
     </div>
 </div>
+
+@section Scripts {
+    <script>
+        const customSwalClass = {
+            popup: 'swal-gymphony-popup',
+            title: 'swal-gymphony-title',
+            htmlContainer: 'swal-gymphony-text',
+            cancelButton: 'swal-btn-cancel'
+        };
+
+        @if (TempData["MENSAJE_EXITO"] != null)
+        {
+                <text>
+                document.addEventListener("DOMContentLoaded", function() {
+                    Swal.fire({
+                        title: '¡Alta Completada!',
+                                text: '@Html.Raw(TempData["MENSAJE_EXITO"])',
+                        icon: 'success',
+                        iconColor: '#20c997',
+                        customClass: customSwalClass,
+                        backdrop: 'rgba(10, 25, 49, 0.8)',
+                        confirmButtonText: 'Genial',
+                        buttonsStyling: false,
+                        customClass: {
+                            ...customSwalClass,
+                            confirmButton: 'swal-btn-save'
+                        }
+                    });
+                });
+                </text>
+        }
+
+        function borrarSocioDefinitivo(idSocio, nombre) {
+            Swal.fire({
+                title: '¿BORRADO DEFINITIVO?',
+                html: `Estás a punto de aplicar un borrado permanente a <b>${nombre}</b>.<br><br>
+                       <div style="background: rgba(220, 53, 69, 0.1); border: 1px solid rgba(220, 53, 69, 0.3); padding: 15px; border-radius: 8px; text-align: left;">
+                           <span style="color: #ff6b6b; font-weight: bold; display: block; margin-bottom: 5px;">Se eliminará:</span>
+                           <ul style="color: #ff6b6b; font-size: 0.9em; margin-bottom: 0; padding-left: 20px;">
+                               <li>Sus datos personales y credenciales.</li>
+                               <li>Su historial de altas y bajas.</li>
+                               <li>Todas sus reservas de sesiones.</li>
+                               <li>Su registro de accesos al centro.</li>
+                           </ul>
+                       </div>`,
+                icon: 'warning',
+                iconColor: '#ff6b6b',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, BORRAR TODO',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-danger me-3',
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+
+                    Swal.fire({
+                        title: 'Eliminando datos...',
+                        allowOutsideClick: false,
+                        didOpen: () => { Swal.showLoading() },
+                        customClass: customSwalClass,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    });
+
+                    fetch(`/AdminUsuarios/EliminarSocio?id=${idSocio}`, {
+                        method: 'POST'
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Borrado Completado!',
+                                text: `El expediente de ${nombre} ha sido destruido.`,
+                                icon: 'success',
+                                iconColor: '#20c997',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            }).then(() => {
+                                window.location.reload();
+                            });
+                        } else {
+                            Swal.fire({
+                                title: 'Error',
+                                text: data.message,
+                                icon: 'error',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            });
+                        }
+                    })
+                    .catch(error => {
+                        Swal.fire('Error', 'Hubo un problema de conexión con el servidor.', 'error');
+                    });
+                }
+            });
+        }
+
+        function darDeBajaSocio(idSocio, nombre) {
+            Swal.fire({
+                title: '¿Dar de Baja?',
+                html: `Vas a tramitar la baja de <b>${nombre}</b>.<br><br>
+                       <span style="font-size: 0.9em; opacity: 0.8;">Su historial y datos se conservarán, pero pasará a estar Inactivo y se registrará la fecha de hoy como fin de su suscripción.</span>`,
+                icon: 'warning',
+                iconColor: '#fd7e14',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, TRAMITAR BAJA',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-edit me-3'
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading() }, customClass: customSwalClass, backdrop: 'rgba(10, 25, 49, 0.8)' });
+
+                    fetch(`/AdminUsuarios/DarBajaSocio?id=${idSocio}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Baja Tramitada!',
+                                text: `${nombre} ahora consta como inactivo.`,
+                                icon: 'success',
+                                iconColor: '#fd7e14',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            }).then(() => { window.location.reload(); });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+
+        function DarDeAltaSocio(idSocio, nombre) {
+            Swal.fire({
+                title: '¿Reactivar Membresía?',
+                html: `Vas a dar de alta nuevamente a <b>${nombre}</b>.<br><br>
+                       <span style="font-size: 0.9em; opacity: 0.8;">Pasará a estar Activo y se registrará la fecha de hoy como inicio de su suscripción.</span>`,
+                icon: 'question',
+                iconColor: '#20c997',
+                showCancelButton: true,
+                confirmButtonText: 'SÍ, DAR DE ALTA',
+                cancelButtonText: 'CANCELAR',
+                buttonsStyling: false,
+                customClass: {
+                    ...customSwalClass,
+                    confirmButton: 'swal-btn-save me-3'
+                },
+                backdrop: 'rgba(10, 25, 49, 0.8)'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading() }, customClass: customSwalClass, backdrop: 'rgba(10, 25, 49, 0.8)' });
+
+                    fetch(`/AdminUsuarios/DarDeAltaSocio?id=${idSocio}`, { method: 'POST' })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) {
+                            Swal.fire({
+                                title: '¡Socio Reactivado!',
+                                text: `${nombre} vuelve a estar activo en el gimnasio.`,
+                                icon: 'success',
+                                iconColor: '#20c997',
+                                customClass: customSwalClass,
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            }).then(() => { window.location.reload(); });
+                        } else {
+                            Swal.fire('Error', data.message, 'error');
+                        }
+                    });
+                }
+            });
+        }
+    </script>
+}
