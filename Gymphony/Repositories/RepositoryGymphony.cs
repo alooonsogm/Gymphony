@@ -601,5 +601,95 @@ namespace Gymphony.Repositories
             }
             return true;
         }
+
+        private async Task<int> GetMaxIdHorarioEmpleadoAsync()
+        {
+            if (this.context.HorarioEmpleados.Count() == 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return await this.context.HorarioEmpleados.MaxAsync(z => z.IdHorarioEmpleados) + 1;
+            }
+        }
+
+        public async Task RegistroEntrenadorAsync(string email, string password, string nombre, string apellidos, string telefono, DateOnly fechaNacimiento, string dni, string rutaFoto, List<int> diasSemana, List<TimeOnly> horasInicio, List<TimeOnly> horasFin)
+        {
+            Usuario user = new Usuario();
+            int idUser = await this.GetMaxIdUsuarioAsync();
+            user.IdUsuario = idUser;
+            user.RoleId = 3;
+            user.Email = email;
+            user.Password = password;
+            user.Nombre = nombre;
+            user.Apellidos = apellidos;
+            user.Telefono = telefono;
+            user.FechaNacimiento = fechaNacimiento;
+            user.Dni = dni;
+            user.RutaFoto = rutaFoto;
+            await this.context.Usuarios.AddAsync(user);
+            await this.context.SaveChangesAsync();
+
+            SeguridadUsuarios userSeguridad = new SeguridadUsuarios();
+            userSeguridad.Id = await this.GetMaxIdUsuarioSeguridadAsync();
+            userSeguridad.UsuarioId = idUser;
+            userSeguridad.Salt = HelperTools.GenerateSalt();
+            userSeguridad.PasswordHash = HelperCryptography.EncryptPassword(password, userSeguridad.Salt);
+            await this.context.SeguridadUsuarios.AddAsync(userSeguridad);
+            await this.context.SaveChangesAsync();
+
+            if (diasSemana != null && diasSemana.Count > 0)
+            {
+                for (int i = 0; i < diasSemana.Count; i++)
+                {
+                    HorarioEmpleados nuevoHorario = new HorarioEmpleados();
+                    nuevoHorario.IdHorarioEmpleados = await this.GetMaxIdHorarioEmpleadoAsync();
+                    nuevoHorario.UsuarioId = idUser;
+                    nuevoHorario.DiaSemana = diasSemana[i];
+                    nuevoHorario.HoraInicio = horasInicio[i];
+                    nuevoHorario.HoraFin = horasFin[i];
+                    await this.context.HorarioEmpleados.AddAsync(nuevoHorario);
+                    await this.context.SaveChangesAsync();
+                }
+            }
+        }
+
+        public async Task<List<HorarioEmpleados>> GetHorariosEntrenadorAsync(int idEntrenador)
+        {
+            return await this.context.HorarioEmpleados.Where(h => h.UsuarioId == idEntrenador).OrderBy(h => h.DiaSemana).ThenBy(h => h.HoraInicio).ToListAsync();
+        }
+
+        public async Task<bool> EntrenadorTieneSesionesAsync(int idEntrenador)
+        {
+            return await this.context.Sesion.AnyAsync(s => s.EntrenadorId == idEntrenador);
+        }
+
+        public async Task<List<Usuario>> GetEntrenadoresSustitutosAsync(int idEntrenadorExcluir)
+        {
+            return await this.context.Usuarios.Where(u => u.RoleId == 3 && u.IdUsuario != idEntrenadorExcluir).ToListAsync();
+        }
+
+        public async Task DeleteEntrenadorSustituyendoAsync(int idEntrenadorABorrar, int? idEntrenadorSustituto)
+        {
+            if (idEntrenadorSustituto != null && idEntrenadorSustituto > 0)
+            {
+                var sesiones = await this.context.Sesion.Where(s => s.EntrenadorId == idEntrenadorABorrar).ToListAsync();
+
+                foreach (var sesion in sesiones)
+                {
+                    sesion.EntrenadorId = idEntrenadorSustituto.Value;
+                }
+
+                await this.context.SaveChangesAsync();
+            }
+
+            Usuario user = await FindUsuarioAsync(idEntrenadorABorrar);
+            if (user != null)
+            {
+                this.context.Usuarios.Remove(user);
+                await this.context.SaveChangesAsync();
+            }
+        }
     }
 }

@@ -170,9 +170,21 @@
         border: 1px solid rgba(32, 201, 151, 0.3);
     }
 
-        .action-success:hover {
-            background: #20c997;
-            color: #000; /* O #fff si prefieres el texto blanco al iluminarse */
+    .action-success:hover {
+        background: #20c997;
+        color: #000; /* O #fff si prefieres el texto blanco al iluminarse */
+    }
+
+    /* Nueva clase para el botón azul de Horarios */
+    .action-info {
+        background: rgba(61, 165, 217, 0.15);
+        color: var(--gymphony-light-blue);
+        border: 1px solid rgba(61, 165, 217, 0.3);
+    }
+
+        .action-info:hover {
+            background: var(--gymphony-light-blue);
+            color: #000;
         }
 
     /* SweetAlert Custom Styles */
@@ -227,7 +239,15 @@
         border-radius: 8px !important;
         font-weight: 600 !important;
         padding: 0.7rem 1.5rem !important;
+        transition: all 0.3s ease !important; /* Añadimos la transición suave */
     }
+
+        /* NUEVO: El efecto hover para el botón de cancelar */
+        .swal-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1) !important; /* Fondo ligeramente blanco */
+            color: #ffffff !important; /* El texto se vuelve blanco brillante */
+            border-color: rgba(255, 255, 255, 0.4) !important; /* El borde resalta más */
+        }
 
     .swal-gymphony-input {
         background: rgba(0, 0, 0, 0.3) !important;
@@ -332,7 +352,7 @@
         {
             <div class="glass-table-header">
                 <h2 class="glass-table-title">Plantilla de Entrenadores</h2>
-                <a href="#" class="btn-create-new">+ Crear Entrenador</a>
+                <a asp-controller="AdminUsuarios" asp-action="CrearEntrenador" class="btn-create-new">+ Crear Entrenador</a>
             </div>
 
             <table class="gymphony-table">
@@ -363,9 +383,8 @@
                             <td>@entrenador.FechaNacimiento.ToString("dd/MM/yyyy")</td>
                             <td><span style="background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 4px; font-size: 0.85rem;">@entrenador.Dni</span></td>
                             <td style="text-align: right; white-space: nowrap;">
-                                <a href="#" class="action-btn action-edit" style="background: rgba(61, 165, 217, 0.15); color: var(--gymphony-light-blue); border-color: rgba(61, 165, 217, 0.3);">Horarios</a>
-                                <a href="#" class="action-btn action-edit">Editar</a>
-                                <a href="#" class="action-btn action-delete">Borrar</a>
+                                <a href="javascript:void(0)" onclick="verHorarios(@entrenador.IdUsuario, '@entrenador.Nombre @entrenador.Apellidos')" class="action-btn action-info">Horarios</a>
+                                <a href="javascript:void(0)" onclick="borrarEntrenador(@entrenador.IdUsuario, '@entrenador.Nombre @entrenador.Apellidos')" class="action-btn action-delete">Borrar</a>
                             </td>
                         </tr>
                     }
@@ -551,6 +570,183 @@
                             Swal.fire('Error', data.message, 'error');
                         }
                     });
+                }
+            });
+        }
+
+        function verHorarios(idEntrenador, nombre) {
+            const nombresDias = ["", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+            Swal.fire({
+                title: `Horarios de ${nombre}`,
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading() },
+                customClass: customSwalClass,
+                backdrop: 'rgba(10, 25, 49, 0.8)'
+            });
+
+            fetch(`/AdminUsuarios/ObtenerHorariosEntrenador?id=${idEntrenador}`, { method: 'POST' })
+                .then(response => response.json())
+                .then(resultado => {
+                    if (resultado.success) {
+                        if (resultado.data.length === 0) {
+                            Swal.fire({
+                                title: `Horarios de ${nombre}`,
+                                html: `<p style="color: var(--text-muted);">Este entrenador no tiene turnos asignados actualmente.</p>`,
+                                icon: 'info',
+                                customClass: customSwalClass,
+                                confirmButtonText: 'Cerrar',
+                                buttonsStyling: false,
+                                customClass: { ...customSwalClass, confirmButton: 'swal-btn-cancel' },
+                                backdrop: 'rgba(10, 25, 49, 0.8)'
+                            });
+                            return;
+                        }
+
+                        let tablaHtml = `
+                            <table class="gymphony-table" style="font-size: 0.9rem; text-align: left; margin-top: 15px;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding: 10px; border-bottom: 1px solid rgba(61, 165, 217, 0.3);">Día</th>
+                                        <th style="padding: 10px; border-bottom: 1px solid rgba(61, 165, 217, 0.3);">Inicio</th>
+                                        <th style="padding: 10px; border-bottom: 1px solid rgba(61, 165, 217, 0.3);">Fin</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                        `;
+
+                        resultado.data.forEach(turno => {
+                            tablaHtml += `
+                                <tr>
+                                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05); font-weight: bold; color: var(--gymphony-light-blue);">${nombresDias[turno.diaSemana]}</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);">${turno.horaInicio}</td>
+                                    <td style="padding: 10px; border-bottom: 1px solid rgba(255,255,255,0.05);">${turno.horaFin}</td>
+                                </tr>
+                            `;
+                        });
+
+                        tablaHtml += `</tbody></table>`;
+
+                        Swal.fire({
+                            title: `Horarios de ${nombre}`,
+                            html: tablaHtml,
+                            customClass: customSwalClass,
+                            confirmButtonText: 'Cerrar',
+                            buttonsStyling: false,
+                            customClass: { ...customSwalClass, confirmButton: 'swal-btn-cancel' },
+                            backdrop: 'rgba(10, 25, 49, 0.8)'
+                        });
+
+                    } else {
+                        Swal.fire('Error', resultado.message, 'error');
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'No se pudieron cargar los horarios.', 'error');
+                });
+        }
+
+        function borrarEntrenador(idEntrenador, nombre) {
+            Swal.fire({ title: 'Comprobando datos...', didOpen: () => { Swal.showLoading() }, customClass: customSwalClass, backdrop: 'rgba(10, 25, 49, 0.8)' });
+
+            fetch(`/AdminUsuarios/ValidarBorradoEntrenador?id=${idEntrenador}`)
+            .then(res => res.json())
+            .then(data => {
+                if (!data.success) {
+                    Swal.fire('Error', data.message, 'error');
+                    return;
+                }
+
+                if (data.hasSessions) {
+                    if (data.sustitutos.length === 0) {
+                        Swal.fire({
+                            title: 'Operación Bloqueada',
+                            text: 'Este entrenador tiene sesiones asignadas, pero no hay ningún otro entrenador en la plantilla para sustituirlo. Debes contratar a otro entrenador primero.',
+                            icon: 'error',
+                            customClass: customSwalClass,
+                            backdrop: 'rgba(10, 25, 49, 0.8)'
+                        });
+                        return;
+                    }
+
+                    let options = '<option value="">-- Selecciona un sustituto --</option>';
+                    data.sustitutos.forEach(s => {
+                        options += `<option value="${s.id}">${s.nombre}</option>`;
+                    });
+
+                    Swal.fire({
+                        title: '¡Atención! Entrenador con sesiones',
+                        html: `<b>${nombre}</b> tiene sesiones asignadas.<br><br>
+                               <span style="font-size:0.9em; color:var(--text-muted);">Para no perder el historial del gimnasio, debes reasignar sus clases a otro entrenador antes de borrarlo.</span><br><br>
+                               <select id="swal-sustituto" class="swal-gymphony-input" style="width: 100%; margin-top: 10px;">
+                                   ${options}
+                               </select>`,
+                        icon: 'warning',
+                        iconColor: '#fd7e14',
+                        showCancelButton: true,
+                        confirmButtonText: 'REASIGNAR Y BORRAR',
+                        cancelButtonText: 'CANCELAR',
+                        buttonsStyling: false,
+                        customClass: { ...customSwalClass, confirmButton: 'swal-btn-danger me-3' },
+                        backdrop: 'rgba(10, 25, 49, 0.8)',
+                        preConfirm: () => {
+                            const sustitutoId = document.getElementById('swal-sustituto').value;
+                            if (!sustitutoId) {
+                                Swal.showValidationMessage('Debes seleccionar un entrenador sustituto');
+                            }
+                            return sustitutoId;
+                        }
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            ejecutarBorrado(idEntrenador, result.value, nombre);
+                        }
+                    });
+
+                }
+                else {
+                    Swal.fire({
+                        title: '¿Borrar Entrenador?',
+                        html: `Estás a punto de borrar a <b>${nombre}</b>.<br><br>
+                               <span style="color:#ff6b6b; font-size:0.9em;">No tiene sesiones asignadas. Su usuario y turnos de trabajo se eliminarán de forma permanente.</span>`,
+                        icon: 'warning',
+                        iconColor: '#ff6b6b',
+                        showCancelButton: true,
+                        confirmButtonText: 'SÍ, BORRAR DEFINITIVO',
+                        cancelButtonText: 'CANCELAR',
+                        buttonsStyling: false,
+                        customClass: { ...customSwalClass, confirmButton: 'swal-btn-danger me-3' },
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            ejecutarBorrado(idEntrenador, null, nombre);
+                        }
+                    });
+                }
+            });
+        }
+
+        function ejecutarBorrado(idBorrar, idSustituto, nombre) {
+            Swal.fire({ title: 'Procesando...', didOpen: () => { Swal.showLoading() }, customClass: customSwalClass, backdrop: 'rgba(10, 25, 49, 0.8)' });
+
+            let url = `/AdminUsuarios/EliminarEntrenador?idBorrar=${idBorrar}`;
+            if (idSustituto) {
+                url += `&idSustituto=${idSustituto}`;
+            }
+
+            fetch(url, { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                if (data.success) {
+                    Swal.fire({
+                        title: '¡Entrenador Borrado!',
+                        text: `El usuario ${nombre} ha sido eliminado con éxito de la plantilla.`,
+                        icon: 'success',
+                        iconColor: '#20c997',
+                        customClass: customSwalClass,
+                        backdrop: 'rgba(10, 25, 49, 0.8)'
+                    }).then(() => window.location.reload());
+                } else {
+                    Swal.fire('Error', data.message, 'error');
                 }
             });
         }
