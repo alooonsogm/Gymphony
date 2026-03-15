@@ -320,7 +320,6 @@
             <table class="gymphony-table">
                 <thead>
                     <tr>
-                        <th style="width: 80px;">ID</th>
                         <th style="width: 250px;">Nombre de la Clase</th>
                         <th>Descripción</th>
                         <th style="text-align: right; width: 200px;">Acciones</th>
@@ -330,7 +329,6 @@
                     @foreach (Clases clase in Model.Clases)
                     {
                         <tr>
-                            <td style="color: var(--gymphony-light-blue); font-weight: bold;">#@clase.IdClases</td>
                             <td style="font-weight: 600;">@clase.Nombre</td>
                             <td style="color: var(--text-muted); font-size: 0.95rem; line-height: 1.5;">
                                 @(clase.Descripcion.Length > 80 ? clase.Descripcion.Substring(0, 80) + "..." : clase.Descripcion)
@@ -355,7 +353,6 @@
             <table class="gymphony-table">
                 <thead>
                     <tr>
-                        <th style="width: 80px;">ID</th>
                         <th>Nombre de la Sala</th>
                         <th>Capacidad Máxima</th>
                         <th style="text-align: right; width: 200px;">Acciones</th>
@@ -365,7 +362,6 @@
                     @foreach (Salas sala in Model.Salas)
                     {
                         <tr>
-                            <td style="color: var(--gymphony-light-blue); font-weight: bold;">#@sala.IdSalas</td>
                             <td style="font-weight: 600;">@sala.Nombre</td>
                             <td>
                                 <span style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); padding: 6px 12px; border-radius: 20px; font-size: 0.9rem; color: #fff;">
@@ -392,7 +388,6 @@
             <table class="gymphony-table">
                 <thead>
                     <tr>
-                        <th style="width: 80px;">ID</th>
                         <th>Fecha y Hora</th>
                         <th>Clase</th>
                         <th>Entrenador</th>
@@ -404,7 +399,6 @@
                     @foreach (DatosSesion sesion in Model.Sesiones)
                     {
                         <tr>
-                            <td style="color: var(--gymphony-light-blue); font-weight: bold;">#@sesion.IdSesion</td>
                             <td>
                                 <div style="font-weight: 700; color: var(--gymphony-light-blue); margin-bottom: 4px;">@sesion.Fecha.ToString("dd MMM yyyy")</div>
                                 <div style="font-size: 0.9rem; color: var(--text-muted); background: rgba(0,0,0,0.2); display: inline-block; padding: 2px 8px; border-radius: 4px;">

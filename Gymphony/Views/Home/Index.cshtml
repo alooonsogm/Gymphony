@@ -1,9 +1,10 @@
-﻿@model List<DatosSesion>
+﻿@using System.Security.Claims
+@model List<DatosSesion>
 @{
     List<int> misReservas = ViewData["SESIONES_RESERVADAS"] as List<int> ?? new List<int>();
-    string nombreUser = Context.Session.GetObject<string>("NOMBREUSUARIO");
-    int idRolUser = Context.Session.GetObject<int>("IDROLUSUARIO");
-    int idUsuarioActual = Context.Session.GetObject<int>("IDUSUARIO");
+    string nombreUser = Context.User.FindFirst(ClaimTypes.Name).Value;
+    string rolUser = Context.User.FindFirst(ClaimTypes.Role).Value;
+    int idUsuarioActual = int.Parse(Context.User.FindFirst(ClaimTypes.NameIdentifier).Value);
 }
 
 <style>
@@ -341,15 +342,15 @@
 
     <div class="home-header">
         <h1 class="welcome-title">Hola, @nombreUser</h1>
-        @if (idRolUser == 2)
+        @if (rolUser == "Socio")
         {
             <p class="welcome-subtitle">Descubre y reserva tus próximas sesiones en Gymphony.</p>
         }
-        else if (idRolUser == 3)
+        else if (rolUser == "Entrenador")
         {
             <p class="welcome-subtitle">Gestiona tus clases y conecta con tus alumnos en Gymphony.</p>
         }
-        else if (idRolUser == 1)
+        else if (rolUser == "Administrador")
         {
             <p class="welcome-subtitle">Panel de control central: administra clases, entrenadores y socios activos en Gymphony.</p>
         }
@@ -430,7 +431,7 @@
             {
                 <div class="col-12 col-md-6 col-xl-4" style="margin-top: 1.5rem;">
                     @{
-                        bool esMiClase = (idRolUser == 3) && (sesion.EntrenadorId == idUsuarioActual);
+                        bool esMiClase = (rolUser == "Entrenador") && (sesion.EntrenadorId == idUsuarioActual);
                         string claseCssMiClase = esMiClase ? "mi-clase" : "";
                     }
 
@@ -502,7 +503,7 @@
                             </div>
                         </div>
 
-                        @if (idRolUser == 2)
+                        @if (rolUser == "Socio")
                         {
                             <div class="sesion-footer">
                                 @if (misReservas.Contains(sesion.IdSesion))

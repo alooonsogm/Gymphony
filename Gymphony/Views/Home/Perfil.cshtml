@@ -1,10 +1,9 @@
-﻿@model Usuario
+﻿@using System.Security.Claims
+@model Usuario
 @{
-    int idRolUser = Context.Session.GetObject<int>("IDROLUSUARIO");
-
+    string rolUser = Context.User.FindFirst(ClaimTypes.Role).Value;
     List<DatosSesion> misReservas = ViewData["MIS_RESERVAS"] as List<DatosSesion> ?? new List<DatosSesion>();
     List<HorarioEmpleados> misHorarios = ViewData["MIS_HORARIOS"] as List<HorarioEmpleados> ?? new List<HorarioEmpleados>();
-
     string[] nombresDias = { "", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo" };
 }
 
@@ -375,7 +374,7 @@
 
     <div class="agenda-section">
 
-        @if (idRolUser == 2)
+        @if (rolUser == "Socio")
         {
             <h3 class="details-title" style="margin-bottom: 1.5rem;">Mis Próximas Clases</h3>
 
@@ -416,7 +415,7 @@
                 </div>
             }
         }
-        else if (idRolUser == 3)
+        else if (rolUser == "Entrenador")
         {
             <h3 class="details-title" style="margin-bottom: 1.5rem;">Mi Horario de Trabajo</h3>
 

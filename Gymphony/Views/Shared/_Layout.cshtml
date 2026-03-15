@@ -1,6 +1,7 @@
-﻿@{
-    string nombreUser = Context.Session.GetObject<string>("NOMBREUSUARIO");
-    int idRol = Context.Session.GetObject<int>("IDROLUSUARIO");
+﻿@using System.Security.Claims
+@{
+    string nombreUser = Context.User.FindFirst(ClaimTypes.Name).Value;
+    string Rol = Context.User.FindFirst(ClaimTypes.Role).Value;
 }
 
 <!DOCTYPE html>
@@ -184,7 +185,7 @@
                             </a>
                         </li>
 
-                        @if (idRol == 1)
+                        @if (Rol == "Administrador")
                         {
                             <li class="nav-item">
                                 <a class="nav-link" asp-controller="AdminClases" asp-action="PanelControl">
@@ -222,7 +223,7 @@
                                 </li>
                                 <li><hr class="dropdown-divider"></li>
                                 <li>
-                                    <a class="dropdown-item dropdown-item-danger" asp-controller="Login" asp-action="Index">Cerrar Sesión</a>
+                                    <a class="dropdown-item dropdown-item-danger" asp-controller="Managed" asp-action="LogOut">Cerrar Sesión</a>
                                 </li>
                             </ul>
                         </li>

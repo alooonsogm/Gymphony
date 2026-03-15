@@ -21,5 +21,6 @@ namespace Gymphony.Data
         public DbSet<Salas> Salas { get; set; }
         public DbSet<Sesion> Sesion { get; set; }
         public DbSet<Afiliaciones> Afiliaciones { get; set; }
+        public DbSet<VistaUsuario> VistaUsuario { get; set; }
     }
 }

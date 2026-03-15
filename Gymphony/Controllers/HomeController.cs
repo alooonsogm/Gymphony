@@ -1,13 +1,16 @@
 using Gymphony.Extensions;
+using Gymphony.Filters;
 using Gymphony.Helpers;
 using Gymphony.Models;
 using Gymphony.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace Gymphony.Controllers
 {
+    [AuthorizeUsuarios]
     public class HomeController : Controller
     {
         private RepositoryGymphony repo;
@@ -21,123 +24,88 @@ namespace Gymphony.Controllers
 
         public async Task<IActionResult> Index()
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            if(idUser == 0)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            else
-            {
-                List<int> sesionesReservadas = await this.repo.GetSesionesReservadasClienteAsync(idUser);
-                ViewData["SESIONES_RESERVADAS"] = sesionesReservadas;
+            int idUser = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            List<int> sesionesReservadas = await this.repo.GetSesionesReservadasClienteAsync(idUser);
+            ViewData["SESIONES_RESERVADAS"] = sesionesReservadas;
 
-                List<DatosSesion> sesiones = await this.repo.GetSesionesNuevasAsync();
-                return View(sesiones);
-            }
+            List<DatosSesion> sesiones = await this.repo.GetSesionesNuevasAsync();
+            return View(sesiones);
         }
 
         public async Task<IActionResult> ReservarSesiones(int idSesion)
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-            if (idUser == 0)
+            int idUser = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (User.IsInRole("Socio") == false)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Solo los socios pueden reservar clases.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol != 2)
-                {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo los clientes pueden reservar clases.";
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    TempData["MENSAJERESERVA"] = await this.repo.ReservarPlazaAsync(idSesion, idUser);
-                    DatosSesion sesion = await this.repo.FindDatosSesionAsync(idSesion);
-                    TempData["NOMBRECLASE"] = sesion.NombreClase;
-                    return RedirectToAction("Index", "Home");
-                }
+                TempData["MENSAJERESERVA"] = await this.repo.ReservarPlazaAsync(idSesion, idUser);
+                DatosSesion sesion = await this.repo.FindDatosSesionAsync(idSesion);
+                TempData["NOMBRECLASE"] = sesion.NombreClase;
+                return RedirectToAction("Index", "Home");
             }
         }
 
         public async Task<IActionResult> AnularSesiones(int idSesion)
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-            if (idUser == 0)
+            int idUser = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (User.IsInRole("Socio") == false)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Solo los socios pueden anular reservas.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol != 2)
-                {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo los clientes no pueden anular reservas.";
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    TempData["MENSAJERESERVA"] = await this.repo.AnularReservaAsync(idSesion, idUser);
-                    DatosSesion sesion = await this.repo.FindDatosSesionAsync(idSesion);
-                    TempData["NOMBRECLASE"] = sesion.NombreClase;
-                    return RedirectToAction("Index", "Home");
-                }
+                TempData["MENSAJERESERVA"] = await this.repo.AnularReservaAsync(idSesion, idUser);
+                DatosSesion sesion = await this.repo.FindDatosSesionAsync(idSesion);
+                TempData["NOMBRECLASE"] = sesion.NombreClase;
+                return RedirectToAction("Index", "Home");
             }
         }
 
         public async Task<IActionResult> GetSociosSesion(int idSesion)
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-            if (idUser == 0)
+            int idUser = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            if (User.IsInRole("Socio") == true)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Los socios no pueden acceder a esta información.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol == 2)
-                {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Los socios no pueden acceder a esta información.";
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    List<Usuario> socios = await this.repo.GetUsuariosPorSesionAsync(idSesion);
-                    var resultado = socios.Select(s => new {nombreCompleto = s.Nombre + " " + s.Apellidos, email = s.Email}).ToList();
-                    return Json(resultado);
-                }
+                List<Usuario> socios = await this.repo.GetUsuariosPorSesionAsync(idSesion);
+                var resultado = socios.Select(s => new {nombreCompleto = s.Nombre + " " + s.Apellidos, email = s.Email}).ToList();
+                return Json(resultado);
             }
         }
 
         public async Task<IActionResult> Perfil()
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-            if (idUser == 0)
-            {
-                return RedirectToAction("Index", "Login");
-            }
-            else
-            {
-                Usuario user = await this.repo.FindUsuarioAsync(idUser);
-                Rol rol = await this.repo.FindRolPorIdRolAsync(user.RoleId);
-                ViewData["ROL"] = rol.NombreRol;
-                ViewData["PATHFOTO"] = this.helper.MapUrlPath(user.RutaFoto, Folders.Usuarios);
+            int idUser = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            string rol = HttpContext.User.FindFirst(ClaimTypes.Role).Value;
 
-                if (idRol == 2)
-                {
-                    List<DatosSesion> misReservas = await this.repo.GetMisSesionesCompletasAsync(idUser);
-                    ViewData["MIS_RESERVAS"] = misReservas;
-                }
-                else if (idRol == 3)
-                {
-                    List<HorarioEmpleados> misHorarios = await this.repo.GetHorarioUsuarioPorIdAsync(idUser);
-                    ViewData["MIS_HORARIOS"] = misHorarios;
-                }
+            Usuario user = await this.repo.FindUsuarioAsync(idUser);
+            ViewData["ROL"] = rol;
+            ViewData["PATHFOTO"] = this.helper.MapUrlPath(user.RutaFoto, Folders.Usuarios);
 
-                return View(user);
+            if (rol == "Socio")
+            {
+                List<DatosSesion> misReservas = await this.repo.GetMisSesionesCompletasAsync(idUser);
+                ViewData["MIS_RESERVAS"] = misReservas;
             }
+            else if (rol == "Entrenador")
+            {
+                List<HorarioEmpleados> misHorarios = await this.repo.GetHorarioUsuarioPorIdAsync(idUser);
+                ViewData["MIS_HORARIOS"] = misHorarios;
+            }
+
+            return View(user);
         }
     }
 }

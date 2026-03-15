@@ -205,19 +205,19 @@ namespace Gymphony.Repositories
 
         public async Task<List<DatosSesion>> GetTodasSesionesAsync()
         {
-            var consulta = from datos in this.context.DatosSesion select datos;
+            var consulta = from datos in this.context.DatosSesion orderby datos.IdSesion descending select datos;
             return await consulta.ToListAsync();
         }
 
         public async Task<List<Clases>> GetTodasClasesAsync()
         {
-            var consulta = from datos in this.context.Clases select datos;
+            var consulta = from datos in this.context.Clases orderby datos.IdClases descending select datos;
             return await consulta.ToListAsync();
         }
 
         public async Task<List<Salas>> GetTodasSalasAsync()
         {
-            var consulta = from datos in this.context.Salas select datos;
+            var consulta = from datos in this.context.Salas orderby datos.IdSalas descending select datos;
             return await consulta.ToListAsync();
         }
 
@@ -454,15 +454,15 @@ namespace Gymphony.Repositories
             }
         }
 
-        public async Task<List<Usuario>> GetUsuariosPorRolAsync(int idRol)
+        public async Task<List<VistaUsuario>> GetUsuariosPorRolAsync(string rol)
         {
-            var consulta = from datos in this.context.Usuarios where datos.RoleId == idRol select datos;
+            var consulta = from datos in this.context.VistaUsuario where datos.NombreRol == rol select datos;
             return await consulta.ToListAsync();
         }
 
         public async Task<List<VistaSocio>> GetSociosConEstadoAsync()
         {
-            var usuariosSocio = await this.context.Usuarios.Where(u => u.RoleId == 2).ToListAsync();
+            var usuariosSocio = await this.context.VistaUsuario.Where(u => u.NombreRol == "Socio").ToListAsync();
             var listaSocios = new List<VistaSocio>();
 
             foreach (var user in usuariosSocio)
@@ -690,6 +690,12 @@ namespace Gymphony.Repositories
                 this.context.Usuarios.Remove(user);
                 await this.context.SaveChangesAsync();
             }
+        }
+
+        public async Task<VistaUsuario> FindVistaUsuarioAsync(int idUsuario)
+        {
+            var consulta = from datos in this.context.VistaUsuario where datos.IdUsuario == idUsuario select datos;
+            return await consulta.FirstOrDefaultAsync();
         }
     }
 }

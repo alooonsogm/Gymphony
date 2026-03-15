@@ -1,4 +1,5 @@
 ﻿using Gymphony.Extensions;
+using Gymphony.Filters;
 using Gymphony.Models;
 using Gymphony.Repositories;
 using Microsoft.AspNetCore.Http;
@@ -6,6 +7,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Gymphony.Controllers
 {
+    [AuthorizeUsuarios]
     public class AdminClasesController : Controller
     {
         private RepositoryGymphony repo;
@@ -17,41 +19,36 @@ namespace Gymphony.Controllers
 
         public async Task<IActionResult> PanelControl(string seccion)
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-
-            if (idUser == 0)
+            if (User.IsInRole("Administrador") == false)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol != 1)
+                if (seccion == null)
                 {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
-                    return RedirectToAction("Index", "Home");
+                    seccion = "clases";
                 }
-                else
-                {
-                    if (seccion == null)
-                    {
-                        seccion = "clases";
-                    }
-                    ViewData["SECCIONACTIVA"] = seccion;
+                ViewData["SECCIONACTIVA"] = seccion;
 
-                    AdminGestionClases model = new AdminGestionClases();
-                    model.Clases = await this.repo.GetTodasClasesAsync();
-                    model.Salas = await this.repo.GetTodasSalasAsync();
-                    model.Sesiones = await this.repo.GetTodasSesionesAsync();
-                    model.Entrenadores = await this.repo.GetTodosEntrenadoresAsync();
-                    return View(model);
-                }
+                AdminGestionClases model = new AdminGestionClases();
+                model.Clases = await this.repo.GetTodasClasesAsync();
+                model.Salas = await this.repo.GetTodasSalasAsync();
+                model.Sesiones = await this.repo.GetTodasSesionesAsync();
+                model.Entrenadores = await this.repo.GetTodosEntrenadoresAsync();
+                return View(model);
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> CrearSala([FromBody] Salas nuevaSala)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.CreateSalaAsync(nuevaSala.Nombre, nuevaSala.CapacidadMaxima);
@@ -66,6 +63,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> EliminarSala(int id)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.DeleteSalasAsync(id);
@@ -84,6 +86,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> EditarSala([FromBody] Salas salaEditada)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.UpdateSalaAsync(salaEditada.IdSalas, salaEditada.Nombre, salaEditada.CapacidadMaxima);
@@ -98,6 +105,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearClase([FromBody] Clases nuevaClase)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.CreateClasesAsync(nuevaClase.Nombre, nuevaClase.Descripcion);
@@ -112,6 +124,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> EliminarClase(int id)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.DeleteClasesAsync(id);
@@ -119,17 +136,18 @@ namespace Gymphony.Controllers
             }
             catch (Exception ex)
             {
-                return Json(new
-                {
-                    success = false,
-                    message = "No puedes borrar esta clase porque ya tiene sesiones programadas. Borra primero las sesiones."
-                });
+                return Json(new { success = false, message = "No puedes borrar esta clase porque ya tiene sesiones programadas. Borra primero las sesiones." });
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> EditarClase([FromBody] Clases claseEditada)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.UpdateClasesAsync(claseEditada.IdClases, claseEditada.Nombre, claseEditada.Descripcion);
@@ -144,6 +162,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> CrearSesion([FromBody] Sesion nuevaSesion)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 string resultadoValidacion = await this.repo.ValidarSesionAsync(nuevaSesion.Fecha, nuevaSesion.HoraInicio, nuevaSesion.HoraFin, nuevaSesion.EntrenadorId, nuevaSesion.SalaId);
@@ -166,6 +189,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> EditarSesion([FromBody] Sesion sesionEditada)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 string resultadoValidacion = await this.repo.ValidarSesionAsync(sesionEditada.Fecha, sesionEditada.HoraInicio, sesionEditada.HoraFin, sesionEditada.EntrenadorId, sesionEditada.SalaId, sesionEditada.IdSesion);
@@ -187,6 +215,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> EliminarSesion(int id)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.DeleteSesionAsync(id);

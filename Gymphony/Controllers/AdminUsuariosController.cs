@@ -1,11 +1,14 @@
 ﻿using Gymphony.Extensions;
+using Gymphony.Filters;
 using Gymphony.Helpers;
 using Gymphony.Models;
 using Gymphony.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Gymphony.Controllers
 {
+    [AuthorizeUsuarios]
     public class AdminUsuariosController : Controller
     {
         private RepositoryGymphony repo;
@@ -19,94 +22,69 @@ namespace Gymphony.Controllers
 
         public async Task<IActionResult> PanelUsuarios(string seccion)
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-
-            if (idUser == 0)
+            if (User.IsInRole("Administrador") == false)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol != 1)
+                if (seccion == null)
                 {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
-                    return RedirectToAction("Index", "Home");
+                    seccion = "socios";
                 }
-                else
-                {
-                    if (seccion == null)
-                    {
-                        seccion = "socios";
-                    }
-                    ViewData["SECCIONACTIVA"] = seccion;
+                ViewData["SECCIONACTIVA"] = seccion;
 
-                    AdminGestionUsuarios model = new AdminGestionUsuarios();
-                    model.Socios = await this.repo.GetSociosConEstadoAsync();
-                    model.Entrenadores = await this.repo.GetUsuariosPorRolAsync(3);
-                    return View(model);
-                }
+                AdminGestionUsuarios model = new AdminGestionUsuarios();
+                model.Socios = await this.repo.GetSociosConEstadoAsync();
+                model.Entrenadores = await this.repo.GetUsuariosPorRolAsync("Entrenador");
+                return View(model);
             }
         }
 
         public IActionResult CrearSocio()
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-
-            if (idUser == 0)
+            if (User.IsInRole("Administrador") == false)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol != 1)
-                {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    return View();
-                }
+                return View();
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> CrearSocio(string email, string password, string nombre, string apellidos, string telefono, DateOnly fechaNacimiento, string dni, IFormFile foto)
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-
-            if (idUser == 0)
+            if (User.IsInRole("Administrador") == false)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol != 1)
+                string fileName = foto.FileName;
+                string path = this.helper.MapPath(fileName, Folders.Usuarios);
+                using (Stream stream = new FileStream(path, FileMode.Create))
                 {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
-                    return RedirectToAction("Index", "Home");
+                    await foto.CopyToAsync(stream);
                 }
-                else
-                {
-                    string fileName = foto.FileName;
-                    string path = this.helper.MapPath(fileName, Folders.Usuarios);
-                    using (Stream stream = new FileStream(path, FileMode.Create))
-                    {
-                        await foto.CopyToAsync(stream);
-                    }
-                    await this.repo.RegistroSocioAsync(email, password, nombre, apellidos, telefono, fechaNacimiento, dni, fileName);
-                    TempData["MENSAJE_EXITO"] = $"El socio {nombre} {apellidos} ha sido dado de alta correctamente.";
-                    return RedirectToAction("PanelUsuarios", new { seccion = "socios" });
-                }
+                await this.repo.RegistroSocioAsync(email, password, nombre, apellidos, telefono, fechaNacimiento, dni, fileName);
+                TempData["MENSAJE_EXITO"] = $"El socio {nombre} {apellidos} ha sido dado de alta correctamente.";
+                return RedirectToAction("PanelUsuarios", new { seccion = "socios" });
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> EliminarSocio(int id)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.DeleteSocioAsync(id);
@@ -121,6 +99,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> DarBajaSocio(int id)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.DarDeBajaSocioAsync(id);
@@ -135,6 +118,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> DarDeAltaSocio(int id)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.DarDeAltaSocioAsync(id);
@@ -148,62 +136,47 @@ namespace Gymphony.Controllers
 
         public IActionResult CrearEntrenador()
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-
-            if (idUser == 0)
+            if (User.IsInRole("Administrador") == false)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol != 1)
-                {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
-                    return RedirectToAction("Index", "Home");
-                }
-                else
-                {
-                    return View();
-                }
+                return View();
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> CrearEntrenador(string email, string password, string nombre, string apellidos, string telefono, DateOnly fechaNacimiento, string dni, IFormFile foto, List<int> diasSemana, List<TimeOnly> horasInicio, List<TimeOnly> horasFin)
         {
-            int idUser = HttpContext.Session.GetObject<int>("IDUSUARIO");
-            int idRol = HttpContext.Session.GetObject<int>("IDROLUSUARIO");
-
-            if (idUser == 0)
+            if (User.IsInRole("Administrador") == false)
             {
-                return RedirectToAction("Index", "Login");
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
+                return RedirectToAction("Index", "Home");
             }
             else
             {
-                if (idRol != 1)
+                string fileName = foto.FileName;
+                string path = this.helper.MapPath(fileName, Folders.Usuarios);
+                using (Stream stream = new FileStream(path, FileMode.Create))
                 {
-                    TempData["MENSAJERESERVA"] = "Acceso denegado: Solo el administrador puede acceder.";
-                    return RedirectToAction("Index", "Home");
+                    await foto.CopyToAsync(stream);
                 }
-                else
-                {
-                    string fileName = foto.FileName;
-                    string path = this.helper.MapPath(fileName, Folders.Usuarios);
-                    using (Stream stream = new FileStream(path, FileMode.Create))
-                    {
-                        await foto.CopyToAsync(stream);
-                    }
-                    await this.repo.RegistroEntrenadorAsync(email, password, nombre, apellidos, telefono, fechaNacimiento, dni, fileName, diasSemana, horasInicio, horasFin);
-                    TempData["MENSAJE_EXITO"] = $"El entrenador {nombre} {apellidos} ha sido configurado correctamente.";
-                    return RedirectToAction("PanelUsuarios", new { seccion = "entrenadores" });
-                }
+                await this.repo.RegistroEntrenadorAsync(email, password, nombre, apellidos, telefono, fechaNacimiento, dni, fileName, diasSemana, horasInicio, horasFin);
+                TempData["MENSAJE_EXITO"] = $"El entrenador {nombre} {apellidos} ha sido configurado correctamente.";
+                return RedirectToAction("PanelUsuarios", new { seccion = "entrenadores" });
             }
         }
 
         [HttpPost]
         public async Task<IActionResult> ObtenerHorariosEntrenador(int id)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 var horarios = await this.repo.GetHorariosEntrenadorAsync(id);
@@ -223,6 +196,11 @@ namespace Gymphony.Controllers
 
         public async Task<IActionResult> ValidarBorradoEntrenador(int id)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 bool tieneSesiones = await this.repo.EntrenadorTieneSesionesAsync(id);
@@ -244,6 +222,11 @@ namespace Gymphony.Controllers
         [HttpPost]
         public async Task<IActionResult> EliminarEntrenador(int idBorrar, int? idSustituto)
         {
+            if (User.IsInRole("Administrador") == false)
+            {
+                return Json(new { success = false, message = "Acceso denegado: Acción no autorizada." });
+            }
+
             try
             {
                 await this.repo.DeleteEntrenadorSustituyendoAsync(idBorrar, idSustituto);

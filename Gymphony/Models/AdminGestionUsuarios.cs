@@ -3,6 +3,6 @@
     public class AdminGestionUsuarios
     {
         public List<VistaSocio> Socios { get; set; }
-        public List<Usuario> Entrenadores { get; set; }
+        public List<VistaUsuario> Entrenadores { get; set; }
     }
 }
