@@ -1,0 +1,121 @@
+﻿@{
+    int aforo = (int)ViewData["AFORO"];
+    int aforoMaximo = 100;
+
+    int porcentaje = (int)Math.Round((double)aforo / aforoMaximo * 100);
+
+    string colorAforo = "#20c997";
+    string estadoTexto = "Nivel Bajo - Ideal para entrenar";
+
+    if (porcentaje >= 80)
+    {
+        colorAforo = "#ff6b6b";
+        estadoTexto = "Nivel Alto - Momento de mayor actividad";
+    }
+    else if (porcentaje >= 50)
+    {
+        colorAforo = "#fd7e14";
+        estadoTexto = "Nivel Medio - Sin aglomeraciones";
+    }
+}
+
+<style>
+    /* Tarjeta de Cristal Central */
+    .aforo-card {
+        background: rgba(10, 25, 49, 0.65);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(61, 165, 217, 0.25);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        padding: 3rem;
+        max-width: 500px;
+        margin: 0 auto;
+        text-align: center;
+    }
+
+    /* Contenedor del Gráfico SVG */
+    .circular-chart {
+        display: block;
+        margin: 10px auto 20px auto;
+        max-width: 250px;
+        max-height: 250px;
+        /* Efecto de resplandor usando el color de la variable Razor */
+        filter: drop-shadow(0 0 15px @(colorAforo) 40);
+    }
+
+    /* Pista de fondo del círculo (Gris oscuro) */
+    .circle-bg {
+        fill: none;
+        stroke: rgba(255, 255, 255, 0.05);
+        stroke-width: 2.5;
+    }
+
+    /* Línea de progreso de color */
+    .circle {
+        fill: none;
+        stroke-width: 2.5;
+        stroke-linecap: round; /* Bordes redondeados en la línea */
+        /* Animación que hace que el círculo se llene suavemente al entrar */
+        animation: fillProgress 1.5s cubic-bezier(0.1, 0.7, 0.1, 1) forwards;
+    }
+
+    /* El texto gigante del centro (XX%) */
+    .percentage {
+        fill: #ffffff;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        font-size: 0.6rem; /* En SVG el tamaño de fuente va a escala del viewBox */
+        font-weight: 800;
+        text-anchor: middle;
+    }
+
+    /* El simbolito '%' más pequeño */
+    .percentage-sign {
+        font-size: 0.35rem;
+        fill: var(--gymphony-light-blue);
+    }
+
+    /* Keyframe para animar el círculo desde 0 hasta el porcentaje real */
+    @@keyframes fillProgress {
+        0% {
+            stroke-dasharray: 0, 100;
+        }
+
+        100% {
+            stroke-dasharray: @porcentaje, 100;
+        }
+    }
+</style>
+
+<div class="container mt-5 text-center">
+    <h2 style="color: #fff; font-weight: 800; text-transform: uppercase;">Aforo en Tiempo Real</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Consulta la ocupación actual para planificar tu entrenamiento.</p>
+
+    <div class="aforo-card">
+
+        <svg viewBox="0 0 36 36" class="circular-chart">
+            <path class="circle-bg"
+                  d="M18 2.0845
+                     a 15.9155 15.9155 0 0 1 0 31.831
+                     a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <path class="circle"
+                  stroke="@colorAforo"
+                  stroke-dasharray="@porcentaje, 100"
+                  d="M18 2.0845
+                     a 15.9155 15.9155 0 0 1 0 31.831
+                     a 15.9155 15.9155 0 0 1 0 -31.831" />
+            <text x="18" y="20.5" class="percentage">@porcentaje<tspan class="percentage-sign">%</tspan></text>
+        </svg>
+
+        <h3 style="color: #fff; font-weight: 700; font-size: 1.5rem; margin-top: 1rem;">
+            @aforo <span style="color: var(--text-muted); font-size: 1rem; font-weight: 500;">/ @aforoMaximo personas</span>
+        </h3>
+
+        <div style="background: @(colorAforo)15; border: 1px solid @(colorAforo)50; display: inline-block; padding: 8px 20px; border-radius: 30px; margin-top: 10px;">
+            <p style="color: @colorAforo; font-weight: 600; font-size: 1rem; margin: 0;">
+                @estadoTexto
+            </p>
+        </div>
+
+    </div>
+</div>

@@ -697,5 +697,46 @@ namespace Gymphony.Repositories
             var consulta = from datos in this.context.VistaUsuario where datos.IdUsuario == idUsuario select datos;
             return await consulta.FirstOrDefaultAsync();
         }
+
+        private async Task<int> GetMaxIdRegistroAforoAsync()
+        {
+            if (this.context.RegistroAforo.Count() == 0)
+            {
+                return 1;
+            }
+            else
+            {
+                return await this.context.RegistroAforo.MaxAsync(z => z.IdRegistroAforo) + 1;
+            }
+        }
+
+        public async Task<int> GetAforoActualAsync()
+        {
+            return await this.context.RegistroAforo.Where(r => r.HoraSalida == null).CountAsync();
+        }
+
+        public async Task<string> RegistrarAccesoAsync(int idSocio)
+        {
+            var registroAbierto = await this.context.RegistroAforo.Where(r => r.ClienteId == idSocio && r.HoraSalida == null).FirstOrDefaultAsync();
+
+            if (registroAbierto != null)
+            {
+                registroAbierto.HoraSalida = DateTime.Now;
+                await this.context.SaveChangesAsync();
+                return "SALIDA";
+            }
+            else
+            {
+                RegistroAforo nuevaEntrada = new RegistroAforo();
+                nuevaEntrada.IdRegistroAforo = await this.GetMaxIdRegistroAforoAsync();
+                nuevaEntrada.ClienteId = idSocio;
+                nuevaEntrada.HoraEntrada = DateTime.Now;
+                nuevaEntrada.HoraSalida = null;
+
+                await this.context.RegistroAforo.AddAsync(nuevaEntrada);
+                await this.context.SaveChangesAsync();
+                return "ENTRADA";
+            }
+        }
     }
 }

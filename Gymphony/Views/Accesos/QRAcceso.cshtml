@@ -1,0 +1,83 @@
+﻿@{
+    string qrCodeBase64 = ViewData["QR"].ToString();
+}
+
+<style>
+    /* Estilo general para la columna que centra la tarjeta */
+    .qr-card-column {
+        /* Ancho base para móviles (como en tu primera foto, que dices que se ve perfecto) */
+        width: 100%;
+        max-width: 400px; /* Mantenemos este límite para móviles */
+        display: block;
+        text-align: center;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Estilo para la tarjeta con efecto cristal */
+    .qr-card {
+        background: rgba(10, 25, 49, 0.65);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(61, 165, 217, 0.25);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        padding: 2rem; /* Acolchado base para móvil */
+        transition: padding 0.3s ease;
+    }
+
+    /* Contenedor blanco para el QR (para contraste) */
+    .qr-container-white {
+        background: white;
+        padding: 20px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        width: 100%; /* Ocupa el ancho de la tarjeta */
+    }
+
+    /* La imagen del QR se escala automáticamente */
+    .qr-image {
+        width: 100%; /* Se estira para ocupar la caja blanca */
+        height: auto; /* Mantiene la proporción cuadrada */
+        display: block;
+        max-width: 100%; /* Evita desbordes */
+    }
+
+    /* Pantallas medianas (tablets y portátiles pequeños) */
+    @@media (min-width: 768px) {
+        .qr-card-column {
+            max-width: 500px; /* Aumentamos un poco el tamaño intermedio */
+        }
+
+        .qr-card {
+            padding: 3rem; /* Recuperamos algo de acolchado */
+        }
+    }
+
+    /* Pantallas grandes (escritorio - Donde estaba el problema) */
+    @@media (min-width: 1200px) {
+        .qr-card-column {
+            max-width: 650px;
+        }
+
+        .qr-card {
+            padding: 4rem; /* Acolchado máximo para escritorios grandes */
+        }
+    }
+</style>
+
+<div class="container mt-5 text-center">
+    <h2 style="color: #fff; font-weight: 800; text-transform: uppercase;">Tu Código QR de Acceso</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Acerca este código al lector del torno para entrar o salir.</p>
+
+    <div class="qr-card-column">
+        <div class="qr-card">
+            <div class="qr-container-white">
+                <img src="data:image/png;base64,@qrCodeBase64" alt="Código QR" class="qr-image" />
+            </div>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,91 @@
+﻿<style>
+    .scanner-wrapper {
+        background: rgba(10, 25, 49, 0.85);
+        backdrop-filter: blur(15px);
+        border: 1px solid rgba(61, 165, 217, 0.3);
+        border-radius: 20px;
+        padding: 2rem;
+        max-width: 600px;
+        margin: 0 auto;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+    }
+
+    /* Forzamos a que la cámara se vea bien y redondeada */
+    #reader {
+        width: 100%;
+        border-radius: 15px;
+        overflow: hidden;
+        border: 3px solid var(--gymphony-light-blue);
+    }
+</style>
+
+<div class="container mt-4 text-center">
+    <h2 style="color: #fff; font-weight: 800; text-transform: uppercase;">Control de Accesos</h2>
+    <p style="color: var(--text-muted); margin-bottom: 2rem;">Acerca el Pase QR del socio a la cámara para registrar su entrada o salida.</p>
+
+    <div class="scanner-wrapper">
+        <div id="reader"></div>
+        <p class="mt-3 text-white-50 small">Cámara activa. Esperando código...</p>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Variable para no escanear el mismo código 50 veces por segundo
+            let procesando = false;
+            // Inicializamos el escáner
+            const html5QrCode = new Html5Qrcode("reader");
+            // Configuramos la cámara (usar la trasera si es un móvil)
+            const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+            html5QrCode.start({ facingMode: "environment" }, config, onScanSuccess)
+            .catch(err => {
+                Swal.fire('Error de Cámara', 'No se ha podido acceder a la cámara. Revisa los permisos de tu navegador.', 'error');
+            });
+
+            // Función que se dispara al detectar un QR
+            function onScanSuccess(decodedText, decodedResult) {
+                if (procesando) return; // Si ya estamos procesando uno, ignoramos
+                procesando = true;
+
+                // decodedText contiene el idSocio (ej: "5")
+                Swal.fire({
+                    title: 'Procesando...',
+                    allowOutsideClick: false,
+                    didOpen: () => { Swal.showLoading() },
+                    background: 'rgba(10, 25, 49, 0.95)',
+                    color: '#fff'
+                });
+
+                // Llamamos a tu método del servidor
+                fetch(`/Accesos/ControlAccesoQR?idSocio=${decodedText}`, { method: 'POST' })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        let color = data.operacion === "ENTRADA" ? '#20c997' : '#fd7e14';
+
+                        Swal.fire({
+                            title: `¡${data.operacion} REGISTRADA!`,
+                            text: `Socio #${decodedText}`,
+                            icon: 'success',
+                            iconColor: color,
+                            timer: 2500, // Se cierra solo en 2.5 segundos para el siguiente cliente
+                            showConfirmButton: false,
+                            background: 'rgba(10, 25, 49, 0.95)',
+                            color: '#fff'
+                        }).then(() => {
+                            procesando = false; // Volvemos a activar el lector
+                        });
+                    } else {
+                        Swal.fire('Acceso Denegado', data.message, 'error').then(() => procesando = false);
+                    }
+                })
+                .catch(error => {
+                    Swal.fire('Error', 'Fallo de conexión.', 'error').then(() => procesando = false);
+                });
+            }
+        });
+    </script>
+}
