@@ -329,7 +329,7 @@ namespace Gymphony.Repositories
         {
             if (fecha < DateOnly.FromDateTime(DateTime.Today))
             {
-                return "La fecha debe ser posterior al día de hoy.";
+                return "La fecha debe ser posterior o el día de hoy.";
             }
 
             if (fecha == DateOnly.FromDateTime(DateTime.Today) && horaInicio <= TimeOnly.FromDateTime(DateTime.Now))
