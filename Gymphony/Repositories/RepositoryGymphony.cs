@@ -741,7 +741,11 @@ namespace Gymphony.Repositories
 
         public async Task<List<DatosHoraPico>> GetHorasPicoAsync()
         {
-            var consulta = from registro in this.context.RegistroAforo where registro.HoraEntrada.Hour >= 9 && registro.HoraEntrada.Hour <= 21
+            DateTime fechaLimite = DateTime.Now.AddDays(-30);
+
+            var consulta = from registro in this.context.RegistroAforo where
+                           registro.HoraEntrada >= fechaLimite &&
+                           registro.HoraEntrada.Hour >= 9 && registro.HoraEntrada.Hour <= 21
                            group registro by registro.HoraEntrada.Hour into grupoHoras orderby grupoHoras.Key ascending
                            select new DatosHoraPico
                            {
