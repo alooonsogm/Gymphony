@@ -1,0 +1,211 @@
+﻿@{
+    string seccionActiva = ViewData["SECCIONACTIVA"].ToString();
+}
+
+<style>
+    /* === Estilos Base (Copiados de tu AdminGestionUsuarios) === */
+    .admin-header {
+        margin-bottom: 2rem;
+    }
+
+    .admin-title {
+        font-weight: 800;
+        font-size: 2.2rem;
+        color: #ffffff;
+        letter-spacing: 1px;
+    }
+
+    .admin-tabs-container {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        border-bottom: 1px solid rgba(61, 165, 217, 0.2);
+        padding-bottom: 1rem;
+    }
+
+    .admin-tab-btn {
+        background: rgba(10, 25, 49, 0.4);
+        border: 1px solid rgba(61, 165, 217, 0.3);
+        color: var(--text-muted);
+        padding: 0.8rem 2rem;
+        border-radius: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+    }
+
+        .admin-tab-btn:hover {
+            background: rgba(61, 165, 217, 0.15);
+            color: #fff;
+        }
+
+        .admin-tab-btn.active {
+            background: linear-gradient(135deg, var(--gymphony-blue), var(--gymphony-light-blue));
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 8px 20px rgba(28, 89, 158, 0.4);
+        }
+
+    .glass-table-wrapper {
+        background: rgba(10, 25, 49, 0.65);
+        backdrop-filter: blur(15px);
+        -webkit-backdrop-filter: blur(15px);
+        border: 1px solid rgba(61, 165, 217, 0.25);
+        border-radius: 20px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+        padding: 2rem;
+        overflow-x: auto;
+    }
+
+    .glass-table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .glass-table-title {
+        color: var(--gymphony-light-blue);
+        font-size: 1.4rem;
+        font-weight: 800;
+        margin: 0;
+        text-transform: uppercase;
+    }
+
+    /* === Estilo específico para los gráficos === */
+    .chart-container {
+        position: relative;
+        height: 450px; /* Altura generosa para que se vea bien */
+        width: 100%;
+        margin-top: 1rem;
+    }
+</style>
+
+<div class="container mt-4 pb-5">
+
+    <div class="admin-header">
+        <h1 class="admin-title">Rendimiento del Negocio</h1>
+        <p style="color: var(--text-muted); font-size: 1.1rem;">Análisis de datos de suscripciones y aforo del gimnasio.</p>
+    </div>
+
+    <div class="admin-tabs-container">
+        <a asp-controller="GraficosDatos" asp-action="PanelEstadisticas" asp-route-seccion="evolucion"
+           class="admin-tab-btn @(seccionActiva == "evolucion" ? "active" : "")">
+            Evolución de Socios
+        </a>
+        <a asp-controller="GraficosDatos" asp-action="PanelEstadisticas" asp-route-seccion="horas"
+           class="admin-tab-btn @(seccionActiva == "horas" ? "active" : "")">
+            Horas Pico
+        </a>
+    </div>
+
+    <div class="glass-table-wrapper">
+
+        @if (seccionActiva == "evolucion")
+        {
+            <div class="glass-table-header">
+                <h2 class="glass-table-title">Balance de Altas y Bajas (Últimos 12 meses)</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartGymphony"></canvas>
+            </div>
+        }
+        else if (seccionActiva == "horas")
+        {
+            <div class="glass-table-header">
+                <h2 class="glass-table-title">Aforo Histórico Total por Hora</h2>
+            </div>
+            <div class="chart-container">
+                <canvas id="chartGymphony"></canvas>
+            </div>
+        }
+
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        Chart.defaults.color = '#a0aabf';
+        Chart.defaults.font.family = "'Segoe UI', Roboto, Helvetica, Arial, sans-serif";
+        Chart.defaults.scale.grid.color = 'rgba(255, 255, 255, 0.05)';
+
+        const ctx = document.getElementById('chartGymphony').getContext('2d');
+
+        @if (seccionActiva == "evolucion")
+        {
+                <text>
+                const datosEvolucion = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewData["EVOLUCION"]));
+
+                new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: datosEvolucion.map(d => d.Mes),
+                        datasets: [
+                            {
+                                label: 'Nuevas Altas',
+                                data: datosEvolucion.map(d => d.Altas),
+                                backgroundColor: '#20c997',
+                                borderRadius: 4
+                            },
+                            {
+                                label: 'Bajas Tramitadas',
+                                data: datosEvolucion.map(d => d.Bajas),
+                                backgroundColor: '#ff6b6b',
+                                borderRadius: 4
+                            }
+                        ]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } },
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    }
+                });
+                </text>
+        }
+        else if (seccionActiva == "horas")
+        {
+                <text>
+                const datosHoras = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewData["HORASPICO"]));
+
+                // Creamos un degradado azul debajo de la línea
+                let gradient = ctx.createLinearGradient(0, 0, 0, 450);
+                gradient.addColorStop(0, 'rgba(61, 165, 217, 0.6)');
+                gradient.addColorStop(1, 'rgba(61, 165, 217, 0.0)');
+
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: datosHoras.map(d => d.Hora + ":00"),
+                        datasets: [{
+                            label: 'Accesos Registrados',
+                            data: datosHoras.map(d => d.AccesosTotales),
+                            borderColor: '#3DA5D9',
+                            backgroundColor: gradient,
+                            borderWidth: 3,
+                            pointBackgroundColor: '#fff',
+                            pointBorderColor: '#3DA5D9',
+                            pointRadius: 5,
+                            pointHoverRadius: 8,
+                            fill: true,
+                            tension: 0.4
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+                        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+                    }
+                });
+                </text>
+        }
+    </script>
+}

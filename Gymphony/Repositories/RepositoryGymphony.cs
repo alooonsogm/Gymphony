@@ -738,5 +738,56 @@ namespace Gymphony.Repositories
                 return "ENTRADA";
             }
         }
+
+        public async Task<List<DatosHoraPico>> GetHorasPicoAsync()
+        {
+            var consulta = from registro in this.context.RegistroAforo where registro.HoraEntrada.Hour >= 9 && registro.HoraEntrada.Hour <= 21
+                           group registro by registro.HoraEntrada.Hour into grupoHoras orderby grupoHoras.Key ascending
+                           select new DatosHoraPico
+                           {
+                               Hora = grupoHoras.Key,
+                               AccesosTotales = grupoHoras.Count()
+                           };
+
+            return await consulta.ToListAsync();
+        }
+
+        public async Task<List<DatosEvolucion>> GetEvolucionSociosAsync()
+        {
+            List<DatosEvolucion> evolucion = new List<DatosEvolucion>();
+
+            DateTime fechaInicioDt = DateTime.Now.AddMonths(-11);
+            DateOnly fechaInicio = new DateOnly(fechaInicioDt.Year, fechaInicioDt.Month, 1);
+
+            var consulta = from afiliacion in this.context.Afiliaciones
+                             where afiliacion.FechaAlta >= fechaInicio || (afiliacion.FechaBaja != null && afiliacion.FechaBaja >= fechaInicio)
+                             select afiliacion;
+
+            List<Afiliaciones> afiliaciones = await consulta.ToListAsync();
+
+            for (int i = 11; i >= 0; i--)
+            {
+                DateTime mesObjetivo = DateTime.Now.AddMonths(-i);
+                int year = mesObjetivo.Year;
+                int month = mesObjetivo.Month;
+
+                var consultaAltas = from a in afiliaciones where a.FechaAlta.Year == year && a.FechaAlta.Month == month select a;
+                int altasMes = consultaAltas.Count();
+
+                var consultaBajas = from a in afiliaciones where a.FechaBaja != null && a.FechaBaja.Value.Year == year && a.FechaBaja.Value.Month == month
+                                    select a;
+                int bajasMes = consultaBajas.Count();
+
+                evolucion.Add(new DatosEvolucion
+                {
+                    Mes = mesObjetivo.ToString("MMM yyyy").ToUpper(),
+                    Altas = altasMes,
+                    Bajas = bajasMes,
+                    CrecimientoNeto = altasMes - bajasMes
+                });
+            }
+
+            return evolucion;
+        }
     }
 }
