@@ -2,6 +2,7 @@
 using Gymphony.Models;
 using Gymphony.Repositories;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace Gymphony.Controllers
 {
@@ -41,6 +42,20 @@ namespace Gymphony.Controllers
                 return View();
             }
 
+        }
+
+        public async Task<IActionResult> AsistenciaSocio()
+        {
+            if (User.IsInRole("Socio") == false)
+            {
+                TempData["MENSAJERESERVA"] = "Acceso denegado: Esta vista es exclusiva para el seguimiento de socios.";
+                return RedirectToAction("Index", "Home");
+            }
+
+            int idUser = int.Parse(HttpContext.User.FindFirst(ClaimTypes.NameIdentifier).Value);
+            List<string> diasAsistencia = await this.repo.GetDiasAsistenciaSocioAsync(idUser);
+            ViewData["ASISTENCIA"] = diasAsistencia;
+            return View();
         }
     }
 }

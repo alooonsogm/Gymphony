@@ -174,8 +174,12 @@ namespace Gymphony.Repositories
                 return new List<DatosSesion>();
             }
 
+            DateOnly hoy = DateOnly.FromDateTime(DateTime.Now);
+            TimeOnly ahora = TimeOnly.FromDateTime(DateTime.Now);
+
             var consulta = from datos in this.context.DatosSesion
                            where idsReservas.Contains(datos.IdSesion)
+                           && (datos.Fecha > hoy || (datos.Fecha == hoy && datos.HoraInicio > ahora))
                            orderby datos.Fecha ascending, datos.HoraInicio ascending
                            select datos;
 
@@ -456,13 +460,13 @@ namespace Gymphony.Repositories
 
         public async Task<List<VistaUsuario>> GetUsuariosPorRolAsync(string rol)
         {
-            var consulta = from datos in this.context.VistaUsuario where datos.NombreRol == rol select datos;
+            var consulta = from datos in this.context.VistaUsuario where datos.NombreRol == rol orderby datos.IdUsuario descending select datos;
             return await consulta.ToListAsync();
         }
 
         public async Task<List<VistaSocio>> GetSociosConEstadoAsync()
         {
-            var usuariosSocio = await this.context.VistaUsuario.Where(u => u.NombreRol == "Socio").ToListAsync();
+            var usuariosSocio = await this.context.VistaUsuario.Where(u => u.NombreRol == "Socio").OrderByDescending(u => u.IdUsuario).ToListAsync();
             var listaSocios = new List<VistaSocio>();
 
             foreach (var user in usuariosSocio)
@@ -792,6 +796,13 @@ namespace Gymphony.Repositories
             }
 
             return evolucion;
+        }
+
+        public async Task<List<string>> GetDiasAsistenciaSocioAsync(int idSocio)
+        {
+            var registros = await this.context.RegistroAforo.Where(r => r.ClienteId == idSocio).Select(r => r.HoraEntrada).ToListAsync();
+            List<string> diasAsistidos = registros.Select(fecha => fecha.ToString("yyyy-MM-dd")).Distinct().ToList();
+            return diasAsistidos;
         }
     }
 }
